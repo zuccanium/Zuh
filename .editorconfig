@@ -1,0 +1,93 @@
+[*.csproj]
+indent_style = space
+indent_size = 2
+
+[*.cs]
+
+dotnet_diagnostic.IDE0058.severity = none
+dotnet_diagnostic.IDE0060.severity = none
+dotnet_diagnostic.IDE0051.severity = none
+
+
+# high priority (personal beef)
+csharp_new_line_before_open_brace = none 
+csharp_space_before_open_parenthesis = false:warning
+
+# csharp_new_line_before_open_brace  =  none
+# csharp_new_line_before_catch  =  false
+# csharp_new_line_before_else  =  false
+# csharp_new_line_before_finally  =  false
+# csharp_new_line_before_members_in_anonymous_types  =  false
+# csharp_new_line_before_members_in_object_initializers  =  false
+
+# not actually a big deal but seeing unnecessary usings sucks
+dotnet_diagnostic.IDE0005.severity = error
+
+# normal
+csharp_style_prefer_braces = false:warning
+csharp_style_prefer_simple_default_expression = true:warning
+csharp_style_inlined_variable_declaration = true:warning
+csharp_style_pattern_matching_over_as_with_null_check = true:warning
+csharp_style_pattern_matching_over_as_with_cast_check = true:warning
+csharp_style_throw_expression = true:warning
+csharp_style_var_elsewhere = true:warning
+csharp_style_var_for_built_in_types = true:warning
+csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_namespace_declarations = block_scoped:suggestion
+csharp_style_prefer_primary_constructors = false
+
+# whatever
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_constructors = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_methods = true:suggestion
+csharp_style_expression_bodied_operators = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+
+### styles
+# PascalCase
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# camelCase
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+### symbol groups
+# private fieldlikes
+dotnet_naming_symbols.private_fieldlikes.applicable_kinds = property, method, field, event
+dotnet_naming_symbols.private_fieldlikes.applicable_accessibilities = private
+
+# nonprivate fieldlikes
+dotnet_naming_symbols.nonprivate_fieldlikes.applicable_kinds = property, method, field, event
+dotnet_naming_symbols.nonprivate_fieldlikes.applicable_accessibilities = public, internal, protected
+
+# consts
+dotnet_naming_symbols.consts.applicable_kinds = field
+dotnet_naming_symbols.consts.applicable_accessibilities = public, internal, protected, private
+dotnet_naming_symbols.consts.required_modifiers = const
+
+# classlikes
+dotnet_naming_symbols.classlikes.applicable_kinds = struct, interface, enum, delegate
+dotnet_naming_symbols.classlikes.applicable_accessibilities = public, internal, protected, private
+
+### rules
+# private fieldlikes should be camelCase
+dotnet_naming_rule.private_fieldlikes_should_be_camel_case.severity = warning
+dotnet_naming_rule.private_fieldlikes_should_be_camel_case.symbols = private_fieldlikes
+dotnet_naming_rule.private_fieldlikes_should_be_camel_case.style = camel_case_style
+
+# nonprivate fieldlikes should be PascalCase
+dotnet_naming_rule.nonprivate_fieldlikes_should_be_pascal_case.severity = warning
+dotnet_naming_rule.nonprivate_fieldlikes_should_be_pascal_case.symbols = nonprivate_fieldlikes
+dotnet_naming_rule.nonprivate_fieldlikes_should_be_pascal_case.style = pascal_case_style
+
+# consts should be PascalCase
+dotnet_naming_rule.consts_should_be_pascal_case.severity = warning
+dotnet_naming_rule.consts_should_be_pascal_case.symbols = consts
+dotnet_naming_rule.consts_should_be_pascal_case.style = pascal_case_style
+
+# classlikes should be PascalCase
+dotnet_naming_rule.classlikes_should_be_pascal_case.severity = warning
+dotnet_naming_rule.classlikes_should_be_pascal_case.symbols = classlikes
+dotnet_naming_rule.classlikes_should_be_pascal_case.style = pascal_case_style
