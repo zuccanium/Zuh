@@ -5,5 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Zuh.Compiler.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pidgin" Version="3.5.1" />
+  </ItemGroup>
 
 </Project>
