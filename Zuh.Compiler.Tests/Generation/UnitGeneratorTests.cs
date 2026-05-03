@@ -1,11 +1,11 @@
 ﻿using Zuh.Compiler.Ast;
-using Zuh.Compiler.Emission;
-using Zuh.Compiler.Emission.Nodes;
+using Zuh.Compiler.Generation;
+using Zuh.Compiler.Generation.Nodes;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Symbols;
 
-namespace Zuh.Compiler.Tests.Emission {
+namespace Zuh.Compiler.Tests.Generation {
     public class UnitGeneratorTests {
         public class SingleSchema {
             public abstract class TestSet {

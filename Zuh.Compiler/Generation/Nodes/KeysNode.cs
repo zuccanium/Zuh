@@ -1,4 +1,4 @@
-﻿namespace Zuh.Compiler.Emission.Nodes {
+﻿namespace Zuh.Compiler.Generation.Nodes {
     public class KeysNode : List<KeysNode.Value>, INode {
         public class Value {
             public required string Key { get; set; }

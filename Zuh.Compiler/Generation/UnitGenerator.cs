@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using Zuh.Compiler.Ast;
-using Zuh.Compiler.Emission.Nodes;
+using Zuh.Compiler.Generation.Nodes;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Symbols;
 
-namespace Zuh.Compiler.Emission {
+namespace Zuh.Compiler.Generation {
     public class UnitGenerator {
         private Stack<Dictionary<Symbol, INode>> stackFrames = [];
         
