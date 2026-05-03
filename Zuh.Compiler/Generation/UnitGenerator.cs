@@ -43,14 +43,14 @@ namespace Zuh.Compiler.Generation {
             foreach(var entry in schema.Entries) {
                 var keys = entry.Key switch {
                     SchemaEntryStaticKey staticKey
-                        => new KeysNode([new KeysNode.Value() {
+                        => new SumNode([new SumNode.Value() {
                             Key = staticKey.Name.Value,
                             IsOptional = entry.Key.IsOptional
                         }]),
 
                     SchemaEntryExpressionKey expressionKey
-                        => expressionToNode(expressionKey.Expression) is KeysNode keysNode
-                            ? keysNode
+                        => expressionToNode(expressionKey.Expression) is SumNode sumNode
+                            ? sumNode
                             : throw new InvalidOperationException(),
                     
                     _ => throw new InvalidOperationException()
@@ -70,11 +70,11 @@ namespace Zuh.Compiler.Generation {
             return node;
         }
 
-        private KeysNode keysToKeysNode(Keys keys) {
-            var node = new KeysNode();
+        private SumNode sumToSumNode(Sum sum) {
+            var node = new SumNode();
             
-            foreach(var entry in keys.Entries)
-                node.Add(new KeysNode.Value() {
+            foreach(var entry in sum.Entries)
+                node.Add(new SumNode.Value() {
                     Key = entry.Name.Value
                 });
 
@@ -91,9 +91,6 @@ namespace Zuh.Compiler.Generation {
             if(symbol is ExpressionSymbol schemaSymbol)
                 return expressionToNode(schemaSymbol.Expression);
 
-            if (symbol is KeysSymbol keysSymbol)
-                return keysToKeysNode(keysSymbol.Keys);
-
             throw new InvalidOperationException();
         }
         
@@ -104,8 +101,8 @@ namespace Zuh.Compiler.Generation {
             if(expression is SchemaExpression schemaExpression)
                 return schemaExpressionToNode(schemaExpression);
 
-            if(expression is KeysExpression keysExpression)
-                return keysExpressionToNode(keysExpression);
+            if(expression is SumExpression sumExpression)
+                return sumExpressionToNode(sumExpression);
             
             if(expression is ArrayExpression arrayExpression)
                 return arrayExpressionToNode(arrayExpression);
@@ -125,8 +122,8 @@ namespace Zuh.Compiler.Generation {
         private INode schemaExpressionToNode(SchemaExpression expression)
             => schemaToMappingNode(expression.Schema);
         
-        private INode keysExpressionToNode(KeysExpression expression)
-            => keysToKeysNode(expression.Keys);
+        private INode sumExpressionToNode(SumExpression expression)
+            => sumToSumNode(expression.Sum);
 
         private INode arrayExpressionToNode(ArrayExpression expression)
             => new ArrayNode() {
@@ -168,10 +165,10 @@ namespace Zuh.Compiler.Generation {
                     ..rightMappingNode
                 ]);
             
-            if(leftNode is KeysNode leftKeysNode && rightNode is KeysNode rightKeysNode)
-                return new KeysNode([
-                    ..leftKeysNode,
-                    ..rightKeysNode
+            if(leftNode is SumNode leftSumNode && rightNode is SumNode rightSumNode)
+                return new SumNode([
+                    ..leftSumNode,
+                    ..rightSumNode
                 ]);
 
             throw new InvalidOperationException();

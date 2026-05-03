@@ -62,7 +62,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 Name = new Label() {
                     Value = "keysParam"
                 },
-                Type = FunctionParameter.FunctionParameterType.Keys
+                Type = FunctionParameter.FunctionParameterType.Sum
             };
 
             var func = new FunctionDeclaration() {

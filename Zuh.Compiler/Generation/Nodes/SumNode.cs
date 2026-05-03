@@ -1,12 +1,12 @@
 ﻿namespace Zuh.Compiler.Generation.Nodes {
     /// <summary>
-    /// node that represents keys.
+    /// node that represents a sum.
     /// </summary>
     /// <remarks>
     /// <b>this is only a tool used in the generation phase!!!</b>
     /// the emitter should never encounter this.
     /// </remarks>
-    public class KeysNode : List<KeysNode.Value>, INode {
+    public class SumNode : List<SumNode.Value>, INode {
         /// <summary>
         /// encapsulates a key and whether its optional.
         /// </summary>
@@ -15,9 +15,9 @@
             public bool IsOptional { get; set; } = false;
         }
         
-        public KeysNode() { }
+        public SumNode() { }
         
-        public KeysNode(IEnumerable<Value> collection)
+        public SumNode(IEnumerable<Value> collection)
             : base(collection) { }
     }
 }

@@ -4,7 +4,7 @@
         public required FunctionParameterType Type { get; init; }
 
         public enum FunctionParameterType {
-            Keys,
+            Sum,
             Schema
         }
 

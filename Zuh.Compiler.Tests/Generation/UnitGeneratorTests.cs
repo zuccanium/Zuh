@@ -166,10 +166,10 @@ namespace Zuh.Compiler.Tests.Generation {
                         Entries = [
                             new SchemaEntry() {
                                 Key = new SchemaEntryExpressionKey() {
-                                    Expression = new KeysExpression() {
-                                        Keys = new Keys() {
+                                    Expression = new SumExpression() {
+                                        Sum = new Sum() {
                                             Entries = [
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "a"
                                                     }
@@ -196,20 +196,20 @@ namespace Zuh.Compiler.Tests.Generation {
                         Entries = [
                             new SchemaEntry() {
                                 Key = new SchemaEntryExpressionKey() {
-                                    Expression = new KeysExpression() {
-                                        Keys = new Keys() {
+                                    Expression = new SumExpression() {
+                                        Sum = new Sum() {
                                             Entries = [
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "a"
                                                     }
                                                 },
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "b"
                                                     }
                                                 },
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "c"
                                                     }
@@ -242,15 +242,15 @@ namespace Zuh.Compiler.Tests.Generation {
                         Entries = [
                             new SchemaEntry() {
                                 Key = new SchemaEntryExpressionKey() {
-                                    Expression = new KeysExpression() {
-                                        Keys = new Keys() {
+                                    Expression = new SumExpression() {
+                                        Sum = new Sum() {
                                             Entries = [
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "a"
                                                     }
                                                 },
-                                                new KeysEntry() {
+                                                new SumEntry() {
                                                     Name = new Label() {
                                                         Value = "b"
                                                     }

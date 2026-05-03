@@ -8,7 +8,7 @@ namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
         internal static Parser<char, IdentifierExpression> IdentifierExpression = null!;
         internal static Parser<char, SchemaExpression> SchemaExpression = null!;
-        internal static Parser<char, KeysExpression> KeysExpression = null!;
+        internal static Parser<char, SumExpression> SumExpression = null!;
         internal static Parser<char, FunctionInvocationExpression> FunctionInvocationExpression = null!;
         internal static Parser<char, Func<Expression, Expression>> ArrayProtoExpression = null!;
         internal static Parser<char, Func<Expression, Expression, Expression>> IntersectionProtoExpression = null!;
@@ -25,9 +25,9 @@ namespace Zuh.Compiler.Parsing {
                     Schema = schema
                 });
             
-            KeysExpression
-                = Keys.Select(keys => new KeysExpression() {
-                    Keys = keys
+            SumExpression
+                = Sum.Select(sum => new SumExpression() {
+                    Sum = sum
                 });
             
             ArrayProtoExpression
@@ -67,7 +67,7 @@ namespace Zuh.Compiler.Parsing {
                             Try(FunctionInvocationExpression.Cast<Expression>()),
                             Try(IdentifierExpression.Cast<Expression>()),
                             Try(SchemaExpression.Cast<Expression>()),
-                            Try(KeysExpression.Cast<Expression>())
+                            Try(SumExpression.Cast<Expression>())
                         ),
                         [
                             Operator.Postfix(ArrayProtoExpression),

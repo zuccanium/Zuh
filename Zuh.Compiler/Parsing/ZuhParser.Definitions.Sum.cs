@@ -5,27 +5,27 @@ using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
-        internal static Parser<char, KeysEntry> KeysEntry = null!;
-        internal static Parser<char, Keys> Keys = null!;
+        internal static Parser<char, SumEntry> SumEntry = null!;
+        internal static Parser<char, Sum> Sum = null!;
 
-        private static void initializeDefinitionsKeys() {
-            KeysEntry
+        private static void initializeDefinitionsSum() {
+            SumEntry
                 = WithLocation(
-                    Label.Select(label => new KeysEntry() {
+                    Label.Select(label => new SumEntry() {
                         Name = label
                     })
                 );
             
-            Keys
+            Sum
                 = WithLocation(
-                    KeysEntry
+                    SumEntry
                         .Between(SkipWhitespaces)
                         .Separated(EntrySeparator)
                         .Between(
                             Token("["),
                             Token("]")
                         )
-                        .Select(entries => new Ast.Keys() {
+                        .Select(entries => new Ast.Sum() {
                             Entries = [..entries]
                         })
                 );
