@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
 using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
@@ -13,7 +15,7 @@ namespace Zuh.Compiler.Parsing {
                         Name = name,
                         Type = type
                     },
-                    Identifier,
+                    Label,
                     LowerEnum<FunctionParameter.FunctionParameterType>()
                 );
 

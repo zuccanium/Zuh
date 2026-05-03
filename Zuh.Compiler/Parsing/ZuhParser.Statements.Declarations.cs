@@ -1,4 +1,7 @@
-﻿using Zuh.Compiler.Ast;
+﻿using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
+using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
@@ -23,12 +26,12 @@ namespace Zuh.Compiler.Parsing {
         // the monster
         internal static Parser<char, TDeclaration> CreateDeclarationWrapped<TWrapped, TDeclaration>(
             Parser<char, TWrapped> parser,
-            Func<Identifier, TWrapped, TDeclaration> func
+            Func<Label, TWrapped, TDeclaration> func
         ) where TWrapped : ZuhNode where TDeclaration : Declaration
             => WithLocation(
                 Map(
                     func,
-                    Identifier,
+                    Label,
                     parser
                 )
             );

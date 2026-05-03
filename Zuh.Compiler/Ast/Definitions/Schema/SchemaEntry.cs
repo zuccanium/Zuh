@@ -6,5 +6,12 @@ namespace Zuh.Compiler.Ast {
 
         public required SchemaEntryKey Key { get; init; }
         public Expression? Value { get; init; }
+
+        public override IEnumerator<IZuhNode> GetChildrenEnumerator() {
+            yield return Key;
+            
+            if(Value is {} value)
+                yield return value;
+        }
     }
 }

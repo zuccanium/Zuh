@@ -1,3 +1,4 @@
 ﻿namespace Zuh.Compiler.Ast {
-    public record IntersectionExpression : BinaryExpression;
+    public record IntersectionExpression : BinaryExpression {
+    }
 }

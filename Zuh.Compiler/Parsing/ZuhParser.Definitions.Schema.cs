@@ -1,4 +1,7 @@
-﻿using Zuh.Compiler.Ast;
+﻿using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
+using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
@@ -51,8 +54,8 @@ namespace Zuh.Compiler.Parsing {
             
             SchemaEntryStaticKey
                 = CreateSchemaEntryKey(
-                    Identifier.Select(key => new SchemaEntryStaticKey() {
-                        Key = key
+                    Label.Select(label => new SchemaEntryStaticKey() {
+                        Name = label
                     })
                 );
 

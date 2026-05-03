@@ -1,5 +1,9 @@
 ﻿namespace Zuh.Compiler.Ast {
     public record KeysEntry : ZuhNode {
-        public required Identifier Identifier { get; init; }
+        public required Label Name { get; init; }
+
+        public override IEnumerator<IZuhNode> GetChildrenEnumerator() {
+            yield return Name;
+        }
     }
 }

@@ -1,0 +1,47 @@
+﻿using Zuh.Compiler.Ast;
+
+namespace Zuh.Compiler.Semantics.Visitors {
+    /// <summary>
+    /// populates a dictionary of all notes to their enclosing scope and creates new scopes when needed.
+    /// </summary>
+    public class ScopeCreatorVisitor : Visitor {
+        private readonly Stack<Scope> scopeStack = [];
+        
+        public required ScopeTracker ScopeTracker { get; init; }
+
+        private Scope? topScope
+            => scopeStack.TryPeek(out var top)
+                ? top
+                : null;
+
+        protected override List<Overload> Overloads
+            => [
+                new Overload<IHasScope>((node, next) => {
+                    pushStack(node);
+
+                    next();
+            
+                    popStack();
+                }),
+                new Overload<IExistsInScope>((node, next) => {
+                    ScopeTracker.NodeToEnclosingScope[node] = topScope!;
+
+                    next();
+                })
+            ];
+
+        private void pushStack(IHasScope scopeNode) {
+            var newTopScope = new Scope() {
+                Parent = topScope
+            };
+            
+            scopeStack.Push(newTopScope);
+            
+            ScopeTracker.NodeToPersonalScope[scopeNode] = newTopScope;
+        }
+
+        private void popStack() {
+            scopeStack.Pop();
+        }
+    }
+}

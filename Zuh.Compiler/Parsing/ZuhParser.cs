@@ -1,6 +1,6 @@
-﻿global using Pidgin;
-global using static Pidgin.Parser;
-global using static Pidgin.Parser<char>;
+﻿using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
 
 using Zuh.Compiler.Ast;
 

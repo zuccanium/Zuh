@@ -1,4 +1,7 @@
-﻿using Zuh.Compiler.Ast;
+﻿using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
+using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
@@ -8,8 +11,8 @@ namespace Zuh.Compiler.Parsing {
         private static void initializeDefinitionsKeys() {
             KeysEntry
                 = WithLocation(
-                    Identifier.Select(identifier => new KeysEntry() {
-                        Identifier = identifier
+                    Label.Select(label => new KeysEntry() {
+                        Name = label
                     })
                 );
             
