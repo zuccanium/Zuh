@@ -1,10 +1,13 @@
-﻿using Zuh.Compiler.Ast;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
+using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
-    /// look for declarations and populates enclosing scopes with them.
+    /// looks for declarations and adds them to their enclosing scopes.
     /// </summary>
     public class SymbolDeclarationVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }
@@ -13,28 +16,48 @@ namespace Zuh.Compiler.Semantics.Visitors {
             => [
                 new Overload<Function>((node, next) => {
                     var personalScope = ScopeTracker.NodeToPersonalScope[node];
-            
+
                     foreach(var param in node.Parameters)
-                        personalScope.Declare(new Symbol() {
+                        personalScope.Declare(new FunctionParameterSymbol() {
                             Name = param.Name.Value,
-                            Node = param,
-                            Visibility = Symbol.SymbolVisibility.Local
+                            FunctionParameter = param
                         });
 
                     next();
                 }),
                 new Overload<Declaration>((node, next) => {
-                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
-            
-                    enclosingScope.Declare(new Symbol() {
-                        Name = node.Name.Value,
-                        Node = node,
-                        Visibility = node.IsExport
-                            ? Symbol.SymbolVisibility.Exported
-                            : Symbol.SymbolVisibility.Local
-                    });
-
                     next();
+                    
+                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
+
+                    var isExport = node.IsExport;
+                    var name = node.Name.Value;
+
+                    enclosingScope.Declare(
+                        node switch {
+                            SchemaDeclaration schemaDeclarationNode => new SchemaSymbol() {
+                                Name = name,
+                                Schema = schemaDeclarationNode.Schema,
+                                IsExport = isExport
+                            },
+                            KeysDeclaration keysDeclarationNode => new KeysSymbol() {
+                                Name = name,
+                                Keys = keysDeclarationNode.Keys,
+                                IsExport = isExport
+                            },
+                            FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
+                                Name = name,
+                                Function = functionDeclarationNode.Function,
+                                Parameters = [
+                                    ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
+                                        .Values
+                                        .Cast<FunctionParameterSymbol>()
+                                ],
+                                IsExport = isExport
+                            },
+                            _ => throw new UnreachableException()
+                        }
+                    );
                 })
             ];
 

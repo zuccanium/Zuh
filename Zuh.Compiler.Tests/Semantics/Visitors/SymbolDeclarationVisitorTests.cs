@@ -1,5 +1,6 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Semantics;
+using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Tests.Semantics.Visitors {
@@ -40,10 +41,9 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.True(fileScope.Symbols.TryGetValue(nameof(schema), out var schemaSymbol));
             
-            Assert.Equivalent(schemaSymbol, new Symbol() {
+            Assert.Equivalent(schemaSymbol, new SchemaSymbol() {
                 Name = nameof(schema),
-                Node = schema,
-                Visibility = Symbol.SymbolVisibility.Local
+                Schema = schema.Schema
             });
         }
 
@@ -108,16 +108,14 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             Assert.True(funcScope.Symbols.TryGetValue(nameof(schemaParam), out var schemaParamSymbol));
             Assert.True(funcScope.Symbols.TryGetValue(nameof(keysParam), out var keysParamSymbol));
             
-            Assert.Equivalent(schemaParamSymbol, new Symbol() {
+            Assert.Equivalent(schemaParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                Node = schemaParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = schemaParam
             });
             
-            Assert.Equivalent(keysParamSymbol, new Symbol() {
+            Assert.Equivalent(keysParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
-                Node = keysParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = keysParam
             });
         }
     }

@@ -2,7 +2,21 @@
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
-    /// populates a dictionary of all notes to their enclosing scope and creates new scopes when needed.
+    /// serves two functions:
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>
+    ///             creates scopes on nodes marked as <see cref="IHasScope"/>
+    ///             and adds them to <see cref="ScopeTracker.NodeToPersonalScope"/>.
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             maps nodes marked as <see cref="IExistsInScope"/> to their enclosing scope
+    ///             and adds them to <see cref="ScopeTracker.NodeToEnclosingScope"/>
+    ///         </description>
+    ///     </item>
+    /// </list>
     /// </summary>
     public class ScopeCreatorVisitor : Visitor {
         private readonly Stack<Scope> scopeStack = [];

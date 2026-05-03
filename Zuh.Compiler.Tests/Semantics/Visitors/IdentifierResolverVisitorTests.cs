@@ -1,5 +1,6 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Semantics;
+using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Tests.Semantics.Visitors {
@@ -46,19 +47,17 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
 
-            var referencedSchemaSymbol = new Symbol() {
+            var referencedSchemaSymbol = new SchemaSymbol() {
                 Name = nameof(referencedSchema),
-                Node = referencedSchema,
-                Visibility = Symbol.SymbolVisibility.Local
+                Schema = referencedSchema.Schema
             };
 
             var fileScope = new Scope() {
                 Symbols = {
                     [nameof(referencedSchema)] = referencedSchemaSymbol,
-                    [nameof(referencingSchema)] = new Symbol() {
+                    [nameof(referencingSchema)] = new SchemaSymbol() {
                         Name = nameof(referencingSchema),
-                        Node = referencingSchema,
-                        Visibility = Symbol.SymbolVisibility.Local
+                        Schema = referencingSchema.Schema
                     }
                 }
             };
@@ -146,22 +145,20 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
             
-            var schemaParamSymbol = new Symbol() {
+            var schemaParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                Node = schemaParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = schemaParam
             };
             
-            var keysParamSymbol = new Symbol() {
+            var keysParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
-                Node = keysParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = keysParam
             };
 
-            var funcSymbol = new Symbol() {
+            var funcSymbol = new FunctionSymbol() {
                 Name = nameof(func),
-                Node = func,
-                Visibility = Symbol.SymbolVisibility.Local
+                Function = func.Function,
+                Parameters = [schemaParamSymbol, keysParamSymbol]
             };
 
             var fileScope = new Scope() {

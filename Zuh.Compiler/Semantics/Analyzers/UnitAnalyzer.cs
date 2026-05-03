@@ -1,9 +1,13 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Semantics.Analyzers {
+    /// <summary>
+    /// analyzes a single unit of compilation (a <see cref="ZuhFile"/>) for semantic data.
+    /// </summary>
     public class UnitAnalyzer : Analyzer {
         public required CompilationAnalyzer CompilationAnalyzer { get; init; }
         
@@ -54,11 +58,11 @@ namespace Zuh.Compiler.Semantics.Analyzers {
             
             // transfer all exported things
             foreach(var (key, symbol) in analyzer.ScopeTracker.NodeToPersonalScope[analyzer.File]) {
-                if(symbol.Visibility != Symbol.SymbolVisibility.Exported)
+                if(symbol is not ExportableSymbol { IsExport: true } exportableSymbol)
                     continue;
 
-                ScopeTracker.NodeToPersonalScope[File].Declare(symbol with {
-                    Visibility = Symbol.SymbolVisibility.Local
+                ScopeTracker.NodeToPersonalScope[File].Declare(exportableSymbol with {
+                    IsExport = false
                 });
             }
         }
