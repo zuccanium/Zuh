@@ -1,6 +1,7 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
+using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Tests.Semantics {
     public class CompilationAnalyzerTests {
@@ -56,9 +57,9 @@ namespace Zuh.Compiler.Tests.Semantics {
 
             Assert.Equivalent(
                 schemaSymbol,
-                new Symbol() {
+                new SchemaSymbol() {
                     Name = nameof(schema),
-                    Node = schema,
+                    Schema = schema.Schema,
                     Visibility = Symbol.SymbolVisibility.Local
                 }
             );

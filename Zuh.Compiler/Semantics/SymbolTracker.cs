@@ -1,4 +1,5 @@
 ﻿using Zuh.Compiler.Ast;
+using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics {
     /// <summary>

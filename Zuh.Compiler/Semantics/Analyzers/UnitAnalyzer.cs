@@ -1,6 +1,7 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Semantics.Analyzers {

@@ -2,6 +2,7 @@
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics {
     public class Scope : IEnumerable<KeyValuePair<string, Symbol>> {

@@ -1,6 +1,8 @@
-﻿using Zuh.Compiler.Ast;
+﻿using System.Diagnostics;
+using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
@@ -9,32 +11,53 @@ namespace Zuh.Compiler.Semantics.Visitors {
     public class SymbolDeclarationVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }
 
+        // TODO: FIGURE OUT HOW TO GIVE THE FUNCTION ITS PARAMETER SYMBOLS!!!
         protected override List<Overload> Overloads
             => [
                 new Overload<Function>((node, next) => {
                     var personalScope = ScopeTracker.NodeToPersonalScope[node];
-            
+
                     foreach(var param in node.Parameters)
-                        personalScope.Declare(new Symbol() {
+                        personalScope.Declare(new FunctionParameterSymbol() {
                             Name = param.Name.Value,
-                            Node = param,
+                            FunctionParameter = param,
                             Visibility = Symbol.SymbolVisibility.Local
                         });
 
                     next();
                 }),
                 new Overload<Declaration>((node, next) => {
-                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
-            
-                    enclosingScope.Declare(new Symbol() {
-                        Name = node.Name.Value,
-                        Node = node,
-                        Visibility = node.IsExport
-                            ? Symbol.SymbolVisibility.Exported
-                            : Symbol.SymbolVisibility.Local
-                    });
-
                     next();
+                    
+                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
+
+                    var visibility = node.IsExport
+                        ? Symbol.SymbolVisibility.Exported
+                        : Symbol.SymbolVisibility.Local;
+
+                    var name = node.Name.Value;
+
+                    enclosingScope.Declare(
+                        node switch {
+                            SchemaDeclaration schemaDeclarationNode => new SchemaSymbol() {
+                                Name = name,
+                                Schema = schemaDeclarationNode.Schema,
+                                Visibility = visibility
+                            },
+                            KeysDeclaration keysDeclarationNode => new KeysSymbol() {
+                                Name = name,
+                                Keys = keysDeclarationNode.Keys,
+                                Visibility = visibility
+                            },
+                            FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
+                                Name = name,
+                                Function = functionDeclarationNode.Function,
+                                Parameters = [],
+                                Visibility = visibility
+                            },
+                            _ => throw new UnreachableException()
+                        }
+                    );
                 })
             ];
 
