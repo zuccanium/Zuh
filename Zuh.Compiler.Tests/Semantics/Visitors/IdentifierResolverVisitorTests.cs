@@ -30,7 +30,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                     Schema = new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = ""
                                     }
@@ -128,7 +128,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                         Schema = new Schema() {
                             Entries = [
                                 new SchemaEntry() {
-                                    Key = new SchemaEntryExpressionKey() {
+                                    Key = new ExpressionKey() {
                                         Expression = new IdentifierExpression() {
                                             Identifier = keysParamIdentifierReference
                                         }

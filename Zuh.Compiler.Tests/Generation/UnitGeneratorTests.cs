@@ -70,7 +70,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = "key"
                                     }
@@ -92,7 +92,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = "schemaKey"
                                     }
@@ -101,14 +101,14 @@ namespace Zuh.Compiler.Tests.Generation {
                                     Schema = new Schema() {
                                         Entries = [
                                             new SchemaEntry() {
-                                                Key = new SchemaEntryStaticKey() {
+                                                Key = new StaticKey() {
                                                     Name = new Label() {
                                                         Value = "a"
                                                     }
                                                 }
                                             },
                                             new SchemaEntry() {
-                                                Key = new SchemaEntryStaticKey() {
+                                                Key = new StaticKey() {
                                                     Name = new Label() {
                                                         Value = "b"
                                                     }
@@ -141,7 +141,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     IsOptional = true,
                                     Name = new Label() {
                                         Value = "key"
@@ -165,13 +165,15 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryExpressionKey() {
+                                Key = new ExpressionKey() {
                                     Expression = new SumExpression() {
                                         Sum = new Sum() {
                                             Entries = [
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "a"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "a"
+                                                        }
                                                     }
                                                 }
                                             ]
@@ -195,23 +197,29 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryExpressionKey() {
+                                Key = new ExpressionKey() {
                                     Expression = new SumExpression() {
                                         Sum = new Sum() {
                                             Entries = [
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "a"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "a"
+                                                        }
                                                     }
                                                 },
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "b"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "b"
+                                                        }
                                                     }
                                                 },
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "c"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "c"
+                                                        }
                                                     }
                                                 }
                                             ]
@@ -241,18 +249,22 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryExpressionKey() {
+                                Key = new ExpressionKey() {
                                     Expression = new SumExpression() {
                                         Sum = new Sum() {
                                             Entries = [
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "a"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "a"
+                                                        }
                                                     }
                                                 },
                                                 new SumEntry() {
-                                                    Name = new Label() {
-                                                        Value = "b"
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "b"
+                                                        }
                                                     }
                                                 }
                                             ]
@@ -263,14 +275,14 @@ namespace Zuh.Compiler.Tests.Generation {
                                     Schema = new Schema() {
                                         Entries = [
                                             new SchemaEntry() {
-                                                Key = new SchemaEntryStaticKey() {
+                                                Key = new StaticKey() {
                                                     Name = new Label() {
                                                         Value = "c"
                                                     }
                                                 }
                                             },
                                             new SchemaEntry() {
-                                                Key = new SchemaEntryStaticKey() {
+                                                Key = new StaticKey() {
                                                     Name = new Label() {
                                                         Value = "d"
                                                     }
@@ -313,7 +325,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     => new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = "key"
                                     }
@@ -323,7 +335,7 @@ namespace Zuh.Compiler.Tests.Generation {
                                         Schema = new Schema() {
                                             Entries = [
                                                 new SchemaEntry() {
-                                                    Key = new SchemaEntryStaticKey() {
+                                                    Key = new StaticKey() {
                                                         Name = new Label() {
                                                             Value = "a"
                                                         }
@@ -336,7 +348,7 @@ namespace Zuh.Compiler.Tests.Generation {
                                         Schema = new Schema() {
                                             Entries = [
                                                 new SchemaEntry() {
-                                                    Key = new SchemaEntryStaticKey() {
+                                                    Key = new StaticKey() {
                                                         Name = new Label() {
                                                             Value = "b"
                                                         }
@@ -379,7 +391,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     Schema = new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = innerKey
                                     }
@@ -403,7 +415,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     Schema = new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = referenceKey
                                     }
@@ -503,7 +515,7 @@ namespace Zuh.Compiler.Tests.Generation {
                         Schema = new Schema() {
                             Entries = [
                                 new SchemaEntry() {
-                                    Key = new SchemaEntryStaticKey() {
+                                    Key = new StaticKey() {
                                         Name = new Label() {
                                             Value = innerKey
                                         }
@@ -531,7 +543,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     Schema = new Schema() {
                         Entries = [
                             new SchemaEntry() {
-                                Key = new SchemaEntryStaticKey() {
+                                Key = new StaticKey() {
                                     Name = new Label() {
                                         Value = referenceKey
                                     }
@@ -543,7 +555,7 @@ namespace Zuh.Compiler.Tests.Generation {
                                             Schema = new Schema() {
                                                 Entries = [
                                                     new SchemaEntry() {
-                                                        Key = new SchemaEntryStaticKey() {
+                                                        Key = new StaticKey() {
                                                             Name = new Label() {
                                                                 Value = argumentKey
                                                             }

@@ -1,5 +1,5 @@
 ﻿namespace Zuh.Compiler.Ast {
-    public abstract record SchemaEntryKey : ZuhNode {
+    public abstract record Key : ZuhNode {
         public bool IsOptional { get; init; } = false;
     }
 }

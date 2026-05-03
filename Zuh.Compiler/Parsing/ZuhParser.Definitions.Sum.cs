@@ -11,8 +11,8 @@ namespace Zuh.Compiler.Parsing {
         private static void initializeDefinitionsSum() {
             SumEntry
                 = WithLocation(
-                    Label.Select(label => new SumEntry() {
-                        Name = label
+                    Key.Select(key => new SumEntry() {
+                        Key = key
                     })
                 );
             

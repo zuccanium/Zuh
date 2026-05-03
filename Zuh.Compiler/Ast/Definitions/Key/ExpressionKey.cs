@@ -1,5 +1,5 @@
 ﻿namespace Zuh.Compiler.Ast {
-    public record SchemaEntryExpressionKey : SchemaEntryDynamicKey {
+    public record ExpressionKey : DynamicKey {
         public required Expression Expression { get; init; }
 
         public override IEnumerator<IZuhNode> GetChildrenEnumerator() {

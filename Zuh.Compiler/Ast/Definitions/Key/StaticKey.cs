@@ -1,5 +1,5 @@
 ﻿namespace Zuh.Compiler.Ast {
-    public record SchemaEntryStaticKey : SchemaEntryKey {
+    public record StaticKey : Key {
         public required Label Name { get; init; }
 
         public override IEnumerator<IZuhNode> GetChildrenEnumerator() {
