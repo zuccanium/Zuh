@@ -3,6 +3,9 @@ using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 
 namespace Zuh.Compiler.Semantics.Analyzers {
+    /// <summary>
+    /// analyzes a multiple units of compilation (<see cref="ZuhFile"/>) for semantic data.
+    /// </summary>
     public class CompilationAnalyzer : Analyzer {
         public required IImportHandler ImportHandler { get; init; }
         public required Dictionary<string, ZuhFile> Files { get; init; }

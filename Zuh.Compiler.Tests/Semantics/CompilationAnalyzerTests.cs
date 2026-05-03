@@ -59,8 +59,7 @@ namespace Zuh.Compiler.Tests.Semantics {
                 schemaSymbol,
                 new SchemaSymbol() {
                     Name = nameof(schema),
-                    Schema = schema.Schema,
-                    Visibility = Symbol.SymbolVisibility.Local
+                    Schema = schema.Schema
                 }
             );
         }

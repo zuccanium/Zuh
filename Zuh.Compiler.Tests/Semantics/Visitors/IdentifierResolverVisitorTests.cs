@@ -49,8 +49,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
 
             var referencedSchemaSymbol = new SchemaSymbol() {
                 Name = nameof(referencedSchema),
-                Schema = referencedSchema.Schema,
-                Visibility = Symbol.SymbolVisibility.Local
+                Schema = referencedSchema.Schema
             };
 
             var fileScope = new Scope() {
@@ -58,8 +57,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                     [nameof(referencedSchema)] = referencedSchemaSymbol,
                     [nameof(referencingSchema)] = new SchemaSymbol() {
                         Name = nameof(referencingSchema),
-                        Schema = referencingSchema.Schema,
-                        Visibility = Symbol.SymbolVisibility.Local
+                        Schema = referencingSchema.Schema
                     }
                 }
             };
@@ -149,21 +147,18 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             var schemaParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                FunctionParameter = schemaParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = schemaParam
             };
             
             var keysParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
-                FunctionParameter = keysParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = keysParam
             };
 
             var funcSymbol = new FunctionSymbol() {
                 Name = nameof(func),
                 Function = func.Function,
-                Parameters = [schemaParamSymbol, keysParamSymbol],
-                Visibility = Symbol.SymbolVisibility.Local
+                Parameters = [schemaParamSymbol, keysParamSymbol]
             };
 
             var fileScope = new Scope() {

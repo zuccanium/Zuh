@@ -2,7 +2,7 @@
 using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Semantics.Symbols {
-    public record FunctionSymbol : Symbol {
+    public record FunctionSymbol : ExportableSymbol {
         public required Function Function { get; init; }
         public required ImmutableArray<FunctionParameterSymbol> Parameters { get; init; }
     }

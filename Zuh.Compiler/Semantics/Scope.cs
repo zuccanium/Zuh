@@ -5,8 +5,11 @@ using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics {
+    /// <summary>
+    /// keeps track of all symbols in a scope and handles resolution between a scope and its ancestors.
+    /// </summary>
     public class Scope : IEnumerable<KeyValuePair<string, Symbol>> {
-        public Dictionary<string, Symbol> Symbols { get; private init; } = [];
+        public Dictionary<string, Symbol> Symbols { get; init; } = [];
         public Scope? Parent { get; init; }
 
         public Result<DeclarationError> Declare(Symbol entry) {

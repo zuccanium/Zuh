@@ -4,7 +4,7 @@ using Zuh.Compiler.Semantics.Analyzers;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
-    /// looks for identifiers and populates a dictionary of identifier -> symbol based on scope.
+    /// looks for identifiers and adds them to a <see cref="SymbolTracker"/>.
     /// </summary>
     public class IdentifierResolverVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }

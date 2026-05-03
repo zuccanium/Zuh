@@ -11,6 +11,13 @@ namespace Zuh.Compiler.Semantics.Visitors {
     // and this is the result
     // i personally think this is way better than manual traversal
     // idk what those professionals are on
+    
+    /// <summary>
+    /// traverses through ast nodes and calls overloads when encountering specific types.
+    /// </summary>
+    /// <remarks>
+    /// yes this uses generic traversal; you can view the source of this comment to read more about why i did that.
+    /// </remarks>
     public abstract class Visitor {
         protected abstract class Overload {
             public abstract Type Type { get; }

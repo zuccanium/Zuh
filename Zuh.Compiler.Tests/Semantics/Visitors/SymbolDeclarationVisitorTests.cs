@@ -43,8 +43,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.Equivalent(schemaSymbol, new SchemaSymbol() {
                 Name = nameof(schema),
-                Schema = schema.Schema,
-                Visibility = Symbol.SymbolVisibility.Local
+                Schema = schema.Schema
             });
         }
 
@@ -111,14 +110,12 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.Equivalent(schemaParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                FunctionParameter = schemaParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = schemaParam
             });
             
             Assert.Equivalent(keysParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
-                FunctionParameter = keysParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = keysParam
             });
         }
     }

@@ -6,32 +6,37 @@ using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Generation {
+    /// <summary>
+    /// thing that generates a root node for a specific compilation unit.
+    /// </summary>
     public class UnitGenerator {
         private Stack<Dictionary<Symbol, INode>> stackFrames = [];
         
+        /// <summary>
+        /// the unit analyzer to reference for semantic data.
+        /// </summary>
         public required UnitAnalyzer Analyzer { get; init; }
-        public MappingNode Root { get; private init; } = new();
 
         private Dictionary<Symbol, INode>? topStackFrame
             => stackFrames.TryPeek(out var top)
                 ? top
                 : null;
         
-        public void Generate() {
+        public MappingNode Generate() {
+            var root = new MappingNode();
+            
             foreach(var statement in Analyzer.File.RootStatements) {
                 if(statement is not SchemaDeclaration { IsExport: true } schemaDeclaration)
                     continue;
                 
-                generateSchemaDeclaration(schemaDeclaration);
+                root[schemaDeclaration.Name.Value] = new MappingNode.Value() {
+                    Node = schemaToMappingNode(schemaDeclaration.Schema)
+                };
             }
+
+            return root;
         }
 
-        private void generateSchemaDeclaration(SchemaDeclaration schemaDeclaration) {
-            Root[schemaDeclaration.Name.Value] = new MappingNode.Value() {
-                Node = schemaToMappingNode(schemaDeclaration.Schema)
-            };
-        }
-        
         private MappingNode schemaToMappingNode(Schema schema) {
             var node = new MappingNode();
             

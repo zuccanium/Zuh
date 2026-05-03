@@ -7,7 +7,7 @@ using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
-    /// look for declarations and populates enclosing scopes with them.
+    /// looks for declarations and adds them to their enclosing scopes.
     /// </summary>
     public class SymbolDeclarationVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }
@@ -20,8 +20,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
                     foreach(var param in node.Parameters)
                         personalScope.Declare(new FunctionParameterSymbol() {
                             Name = param.Name.Value,
-                            FunctionParameter = param,
-                            Visibility = Symbol.SymbolVisibility.Local
+                            FunctionParameter = param
                         });
 
                     next();
@@ -31,10 +30,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
                     
                     var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
 
-                    var visibility = node.IsExport
-                        ? Symbol.SymbolVisibility.Exported
-                        : Symbol.SymbolVisibility.Local;
-
+                    var isExport = node.IsExport;
                     var name = node.Name.Value;
 
                     enclosingScope.Declare(
@@ -42,12 +38,12 @@ namespace Zuh.Compiler.Semantics.Visitors {
                             SchemaDeclaration schemaDeclarationNode => new SchemaSymbol() {
                                 Name = name,
                                 Schema = schemaDeclarationNode.Schema,
-                                Visibility = visibility
+                                IsExport = isExport
                             },
                             KeysDeclaration keysDeclarationNode => new KeysSymbol() {
                                 Name = name,
                                 Keys = keysDeclarationNode.Keys,
-                                Visibility = visibility
+                                IsExport = isExport
                             },
                             FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
                                 Name = name,
@@ -57,7 +53,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
                                         .Values
                                         .Cast<FunctionParameterSymbol>()
                                 ],
-                                Visibility = visibility
+                                IsExport = isExport
                             },
                             _ => throw new UnreachableException()
                         }

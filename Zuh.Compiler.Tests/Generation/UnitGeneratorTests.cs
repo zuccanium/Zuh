@@ -53,9 +53,9 @@ namespace Zuh.Compiler.Tests.Generation {
                         Analyzer = analyzer
                     };
                     
-                    generator.Generate();
+                    var root = generator.Generate();
                     
-                    Assert.Equivalent(generator.Root, new MappingNode() {
+                    Assert.Equivalent(root, new MappingNode() {
                         [nameof(schema)] = new MappingNode.Value() {
                             Node = SchemaNode
                         }
@@ -434,8 +434,7 @@ namespace Zuh.Compiler.Tests.Generation {
                 Symbols = {
                     [referencedSchemaIdentifierReference] = new SchemaSymbol() {
                         Name = nameof(referencedSchema),
-                        Schema = referencedSchema.Schema,
-                        Visibility = Symbol.SymbolVisibility.Local
+                        Schema = referencedSchema.Schema
                     }
                 }
             };
@@ -452,9 +451,9 @@ namespace Zuh.Compiler.Tests.Generation {
                 Analyzer = analyzer
             };
                     
-            generator.Generate();
+            var root = generator.Generate();
                     
-            Assert.Equivalent(generator.Root, new MappingNode() {
+            Assert.Equivalent(root, new MappingNode() {
                 [nameof(referencingSchema)] = new MappingNode.Value() {
                     Node = new MappingNode() {
                         [referenceKey] = new MappingNode.Value() {
@@ -562,8 +561,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var schemaParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                FunctionParameter = schemaParam,
-                Visibility = Symbol.SymbolVisibility.Local
+                FunctionParameter = schemaParam
             };
             
             var functionSymbol = new FunctionSymbol() {
@@ -571,8 +569,7 @@ namespace Zuh.Compiler.Tests.Generation {
                 Function = func.Function,
                 Parameters = [
                     schemaParamSymbol
-                ],
-                Visibility = Symbol.SymbolVisibility.Local
+                ]
             };
             
             var fileScope = new Scope();
@@ -611,9 +608,9 @@ namespace Zuh.Compiler.Tests.Generation {
                 Analyzer = analyzer
             };
                     
-            generator.Generate();
+            var root = generator.Generate();
                     
-            Assert.Equivalent(generator.Root, new MappingNode() {
+            Assert.Equivalent(root, new MappingNode() {
                 [nameof(referencingSchema)] = new MappingNode.Value() {
                     Node = new MappingNode() {
                         [referenceKey] = new MappingNode.Value() {
