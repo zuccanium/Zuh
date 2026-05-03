@@ -66,23 +66,25 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             var file = new ZuhFile() {
                 RootStatements = [
-                    new SchemaDeclaration() {
+                    new ExpressionDeclaration() {
                         Name = new Label() {
                             Value = "schema"
                         },
-                        Schema = new Schema() {
-                            Entries = [
-                                new SchemaEntry() {
-                                    Key = new SchemaEntryStaticKey() {
-                                        Name = new Label() {
-                                            Value = ""
+                        Expression = new SchemaExpression() {
+                            Schema = new Schema() {
+                                Entries = [
+                                    new SchemaEntry() {
+                                        Key = new SchemaEntryStaticKey() {
+                                            Name = new Label() {
+                                                Value = ""
+                                            },
                                         },
-                                    },
-                                    Value = new IdentifierExpression() {
-                                        Identifier = identifier
+                                        Value = new IdentifierExpression() {
+                                            Identifier = identifier
+                                        }
                                     }
-                                }
-                            ]
+                                ]
+                            }
                         }
                     }
                 ]

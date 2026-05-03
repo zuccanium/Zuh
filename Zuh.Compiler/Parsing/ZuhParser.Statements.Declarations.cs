@@ -6,8 +6,7 @@ using Zuh.Compiler.Ast;
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
         internal static Parser<char, FunctionDeclaration> FunctionDeclaration = null!;
-        internal static Parser<char, SchemaDeclaration> SchemaDeclaration = null!;
-        internal static Parser<char, KeysDeclaration> KeysDeclaration = null!;
+        internal static Parser<char, ExpressionDeclaration> ExpressionDeclaration = null!;
         internal static Parser<char, Declaration> Declaration = null!;
         
         internal static Parser<char, TDeclaration> CreateDeclaration<TDeclaration>(
@@ -48,24 +47,13 @@ namespace Zuh.Compiler.Parsing {
                     )
                 );
             
-            SchemaDeclaration
+            ExpressionDeclaration
                 = CreateDeclaration(
                     CreateDeclarationWrapped(
-                        Schema,
-                        (name, schema) => new SchemaDeclaration() {
+                        Expression,
+                        (name, expression) => new ExpressionDeclaration() {
                             Name = name,
-                            Schema = schema
-                        }
-                    )
-                );
-            
-            KeysDeclaration
-                = CreateDeclaration(
-                    CreateDeclarationWrapped(
-                        Keys,
-                        (name, keys) => new KeysDeclaration() {
-                            Name = name,
-                            Keys = keys
+                            Expression = expression
                         }
                     )
                 );
@@ -73,8 +61,7 @@ namespace Zuh.Compiler.Parsing {
             Declaration
                 = OneOf(
                     Try(FunctionDeclaration.Cast<Declaration>()),
-                    Try(SchemaDeclaration.Cast<Declaration>()),
-                    Try(KeysDeclaration.Cast<Declaration>())
+                    Try(ExpressionDeclaration.Cast<Declaration>())
                 );
         }
     }

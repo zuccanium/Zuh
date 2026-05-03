@@ -7,12 +7,14 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
     public class SymbolDeclarationVisitorTests {
         [Fact]
         public void SymbolDeclarationVisitor_Works_WithRootStatements() {
-            var schema = new SchemaDeclaration() {
+            var schema = new ExpressionDeclaration() {
                 Name = new Label() {
                     Value = "schema"
                 },
-                Schema = new Schema() {
-                    Entries = []
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = []
+                    }
                 }
             };
             
@@ -41,9 +43,9 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.True(fileScope.Symbols.TryGetValue(nameof(schema), out var schemaSymbol));
             
-            Assert.Equivalent(schemaSymbol, new SchemaSymbol() {
+            Assert.Equivalent(schemaSymbol, new ExpressionSymbol() {
                 Name = nameof(schema),
-                Schema = schema.Schema
+                Expression = schema.Expression
             });
         }
 

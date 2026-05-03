@@ -7,12 +7,14 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
     public class IdentifierResolverVisitorTests {
         [Fact]
         public void IdentifierResolverVisitor_Works_WithRootStatements() {
-            var referencedSchema = new SchemaDeclaration() {
+            var referencedSchema = new ExpressionDeclaration() {
                 Name = new Label() {
                     Value = "referencedSchema"
                 },
-                Schema = new Schema() {
-                    Entries = []
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = []
+                    }
                 }
             };
 
@@ -20,23 +22,25 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 Value = nameof(referencedSchema)
             };
 
-            var referencingSchema = new SchemaDeclaration() {
+            var referencingSchema = new ExpressionDeclaration() {
                 Name = new Label() {
                     Value = "referencingSchema"
                 },
-                Schema = new Schema() {
-                    Entries = [
-                        new SchemaEntry() {
-                            Key = new SchemaEntryStaticKey() {
-                                Name = new Label() {
-                                    Value = ""
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new SchemaEntryStaticKey() {
+                                    Name = new Label() {
+                                        Value = ""
+                                    }
+                                },
+                                Value = new IdentifierExpression() {
+                                    Identifier = referencedSchemaIdentifierReference
                                 }
-                            },
-                            Value = new IdentifierExpression() {
-                                Identifier = referencedSchemaIdentifierReference
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             };
             
@@ -47,17 +51,17 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
 
-            var referencedSchemaSymbol = new SchemaSymbol() {
+            var referencedSchemaSymbol = new ExpressionSymbol() {
                 Name = nameof(referencedSchema),
-                Schema = referencedSchema.Schema
+                Expression = referencedSchema.Expression
             };
 
             var fileScope = new Scope() {
                 Symbols = {
                     [nameof(referencedSchema)] = referencedSchemaSymbol,
-                    [nameof(referencingSchema)] = new SchemaSymbol() {
+                    [nameof(referencingSchema)] = new ExpressionSymbol() {
                         Name = nameof(referencingSchema),
-                        Schema = referencingSchema.Schema
+                        Expression = referencingSchema.Expression
                     }
                 }
             };

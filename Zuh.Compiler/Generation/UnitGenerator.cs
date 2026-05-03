@@ -26,11 +26,11 @@ namespace Zuh.Compiler.Generation {
             var root = new MappingNode();
             
             foreach(var statement in Analyzer.File.RootStatements) {
-                if(statement is not SchemaDeclaration { IsExport: true } schemaDeclaration)
+                if(statement is not ExpressionDeclaration { IsExport: true } expressionDeclaration)
                     continue;
                 
-                root[schemaDeclaration.Name.Value] = new MappingNode.Value() {
-                    Node = schemaToMappingNode(schemaDeclaration.Schema)
+                root[expressionDeclaration.Name.Value] = new MappingNode.Value() {
+                    Node = expressionToNode(expressionDeclaration.Expression)
                 };
             }
 
@@ -88,8 +88,8 @@ namespace Zuh.Compiler.Generation {
             if(symbol is FunctionParameterSymbol functionParameterSymbol)
                 return topStackFrame![functionParameterSymbol];
             
-            if(symbol is SchemaSymbol schemaSymbol)
-                return schemaToMappingNode(schemaSymbol.Schema);
+            if(symbol is ExpressionSymbol schemaSymbol)
+                return expressionToNode(schemaSymbol.Expression);
 
             if (symbol is KeysSymbol keysSymbol)
                 return keysToKeysNode(keysSymbol.Keys);

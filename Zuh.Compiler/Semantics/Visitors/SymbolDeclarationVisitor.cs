@@ -35,14 +35,9 @@ namespace Zuh.Compiler.Semantics.Visitors {
 
                     enclosingScope.Declare(
                         node switch {
-                            SchemaDeclaration schemaDeclarationNode => new SchemaSymbol() {
+                            ExpressionDeclaration expressionDeclarationNode => new ExpressionSymbol() {
                                 Name = name,
-                                Schema = schemaDeclarationNode.Schema,
-                                IsExport = isExport
-                            },
-                            KeysDeclaration keysDeclarationNode => new KeysSymbol() {
-                                Name = name,
-                                Keys = keysDeclarationNode.Keys,
+                                Expression = expressionDeclarationNode.Expression,
                                 IsExport = isExport
                             },
                             FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {

@@ -10,13 +10,15 @@ namespace Zuh.Compiler.Tests.Semantics {
             const string importedFileName = "imported.zuh";
             const string mainFileName = "main.zuh";
 
-            var schema = new SchemaDeclaration() {
+            var schema = new ExpressionDeclaration() {
                 IsExport = true,
                 Name = new Label() {
                     Value = "schema"
                 },
-                Schema = new Schema() {
-                    Entries = []
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = []
+                    }
                 }
             };
             
@@ -57,9 +59,9 @@ namespace Zuh.Compiler.Tests.Semantics {
 
             Assert.Equivalent(
                 schemaSymbol,
-                new SchemaSymbol() {
+                new ExpressionSymbol() {
                     Name = nameof(schema),
-                    Schema = schema.Schema
+                    Expression = schema.Expression
                 }
             );
         }

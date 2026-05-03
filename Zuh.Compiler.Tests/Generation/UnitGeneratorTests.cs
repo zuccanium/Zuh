@@ -14,12 +14,14 @@ namespace Zuh.Compiler.Tests.Generation {
                 
                 [Fact]
                 public void Generate_SingleSchema_Works() {
-                    var schema = new SchemaDeclaration() {
+                    var schema = new ExpressionDeclaration() {
                         IsExport = true,
                         Name = new Label() {
                             Value = "schema"
                         },
-                        Schema = Schema
+                        Expression = new SchemaExpression() {
+                            Schema = Schema
+                        }
                     };
 
                     var file = new ZuhFile() {
@@ -369,20 +371,22 @@ namespace Zuh.Compiler.Tests.Generation {
             const string referenceKey = "reference";
             const string innerKey = "a";
             
-            var referencedSchema = new SchemaDeclaration() {
+            var referencedSchema = new ExpressionDeclaration() {
                 Name = new Label() {
                     Value = "referencedSchema"
                 },
-                Schema = new Schema() {
-                    Entries = [
-                        new SchemaEntry() {
-                            Key = new SchemaEntryStaticKey() {
-                                Name = new Label() {
-                                    Value = innerKey
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new SchemaEntryStaticKey() {
+                                    Name = new Label() {
+                                        Value = innerKey
+                                    }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             };
 
@@ -390,24 +394,26 @@ namespace Zuh.Compiler.Tests.Generation {
                 Value = nameof(referencedSchema)
             };
             
-            var referencingSchema = new SchemaDeclaration() {
+            var referencingSchema = new ExpressionDeclaration() {
                 IsExport = true,
                 Name = new Label() {
                     Value = "referencingSchema"
                 },
-                Schema = new Schema() {
-                    Entries = [
-                        new SchemaEntry() {
-                            Key = new SchemaEntryStaticKey() {
-                                Name = new Label() {
-                                    Value = referenceKey
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new SchemaEntryStaticKey() {
+                                    Name = new Label() {
+                                        Value = referenceKey
+                                    }
+                                },
+                                Value = new IdentifierExpression() {
+                                    Identifier = referencedSchemaIdentifierReference
                                 }
-                            },
-                            Value = new IdentifierExpression() {
-                                Identifier = referencedSchemaIdentifierReference
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             };
 
@@ -432,9 +438,9 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var symbolTracker = new SymbolTracker() {
                 Symbols = {
-                    [referencedSchemaIdentifierReference] = new SchemaSymbol() {
+                    [referencedSchemaIdentifierReference] = new ExpressionSymbol() {
                         Name = nameof(referencedSchema),
-                        Schema = referencedSchema.Schema
+                        Expression = referencedSchema.Expression
                     }
                 }
             };
@@ -516,39 +522,41 @@ namespace Zuh.Compiler.Tests.Generation {
                 Value = nameof(func)
             };
             
-            var referencingSchema = new SchemaDeclaration() {
+            var referencingSchema = new ExpressionDeclaration() {
                 IsExport = true,
                 Name = new Label() {
                     Value = "referencingSchema"
                 },
-                Schema = new Schema() {
-                    Entries = [
-                        new SchemaEntry() {
-                            Key = new SchemaEntryStaticKey() {
-                                Name = new Label() {
-                                    Value = referenceKey
-                                }
-                            },
-                            Value = new FunctionInvocationExpression() {
-                                FunctionIdentifier = functionIdentifierReference,
-                                Arguments = [
-                                    new SchemaExpression() {
-                                        Schema = new Schema() {
-                                            Entries = [
-                                                new SchemaEntry() {
-                                                    Key = new SchemaEntryStaticKey() {
-                                                        Name = new Label() {
-                                                            Value = argumentKey
+                Expression = new SchemaExpression() {
+                    Schema = new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new SchemaEntryStaticKey() {
+                                    Name = new Label() {
+                                        Value = referenceKey
+                                    }
+                                },
+                                Value = new FunctionInvocationExpression() {
+                                    FunctionIdentifier = functionIdentifierReference,
+                                    Arguments = [
+                                        new SchemaExpression() {
+                                            Schema = new Schema() {
+                                                Entries = [
+                                                    new SchemaEntry() {
+                                                        Key = new SchemaEntryStaticKey() {
+                                                            Name = new Label() {
+                                                                Value = argumentKey
+                                                            }
                                                         }
                                                     }
-                                                }
-                                            ]
+                                                ]
+                                            }
                                         }
-                                    }
-                                ]
+                                    ]
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             };
 
