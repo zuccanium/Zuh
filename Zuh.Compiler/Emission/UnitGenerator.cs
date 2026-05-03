@@ -7,8 +7,6 @@ using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Emission {
     public class UnitGenerator {
-        private record struct KeyInfo(string Name, bool IsOptional);
-
         private Stack<Dictionary<Symbol, INode>> stackFrames = [];
         
         public required UnitAnalyzer Analyzer { get; init; }
@@ -40,9 +38,17 @@ namespace Zuh.Compiler.Emission {
             foreach(var entry in schema.Entries) {
                 var keys = entry.Key switch {
                     SchemaEntryStaticKey staticKey
-                        => (KeyInfo[])[new KeyInfo(staticKey.Name.Value, staticKey.IsOptional)],
+                        => new KeysNode([new KeysNode.Value() {
+                            Key = staticKey.Name.Value,
+                            IsOptional = entry.Key.IsOptional
+                        }]),
 
-                    _ => throw new InvalidOperationException("qua")
+                    SchemaEntryExpressionKey expressionKey
+                        => expressionToNode(expressionKey.Expression) is KeysNode keysNode
+                            ? keysNode
+                            : throw new InvalidOperationException(),
+                    
+                    _ => throw new InvalidOperationException()
                 };
                 
                 var valueNode = entry.Value is { } expressionValue
@@ -50,11 +56,22 @@ namespace Zuh.Compiler.Emission {
                     : new ScalarNode();
 
                 foreach(var key in keys)
-                    node[key.Name] = new MappingNode.Value() {
+                    node[key.Key] = new MappingNode.Value() {
                         IsOptional = key.IsOptional,
                         Node = valueNode
                     };
             }
+
+            return node;
+        }
+
+        private KeysNode keysToKeysNode(Keys keys) {
+            var node = new KeysNode();
+            
+            foreach(var entry in keys.Entries)
+                node.Add(new KeysNode.Value() {
+                    Key = entry.Name.Value
+                });
 
             return node;
         }
@@ -69,16 +86,22 @@ namespace Zuh.Compiler.Emission {
             if(symbol is SchemaSymbol schemaSymbol)
                 return schemaToMappingNode(schemaSymbol.Schema);
 
-            if(symbol is KeysSymbol keysSymbol)
-                throw new NotImplementedException();
+            if (symbol is KeysSymbol keysSymbol)
+                return keysToKeysNode(keysSymbol.Keys);
 
             throw new InvalidOperationException();
         }
         
         private INode expressionToNode(Expression expression) {
+            if(expression is IdentifierExpression identifierExpression)
+                return identifierExpressionToNode(identifierExpression);
+            
             if(expression is SchemaExpression schemaExpression)
                 return schemaExpressionToNode(schemaExpression);
 
+            if(expression is KeysExpression keysExpression)
+                return keysExpressionToNode(keysExpression);
+            
             if(expression is ArrayExpression arrayExpression)
                 return arrayExpressionToNode(arrayExpression);
             
@@ -90,15 +113,21 @@ namespace Zuh.Compiler.Emission {
 
             throw new InvalidOperationException("idk how this happened");
         }
+        
+        private INode identifierExpressionToNode(IdentifierExpression expression)
+            => identifierToNode(expression.Identifier);
 
         private INode schemaExpressionToNode(SchemaExpression expression)
             => schemaToMappingNode(expression.Schema);
+        
+        private INode keysExpressionToNode(KeysExpression expression)
+            => keysToKeysNode(expression.Keys);
 
         private INode arrayExpressionToNode(ArrayExpression expression)
             => new ArrayNode() {
                 Node = expressionToNode(expression.Expression)
             };
-
+        
         private INode functionInvocationExpressionToNode(FunctionInvocationExpression expression) {
             var symbol = Analyzer.SymbolTracker.Symbols[expression.FunctionIdentifier];
 
@@ -123,21 +152,24 @@ namespace Zuh.Compiler.Emission {
 
             return node;
         }
-
-        private INode identifierExpressionToNode(IdentifierExpression expression)
-            => identifierToNode(expression.Identifier);
         
         private INode intersectionExpressionToNode(IntersectionExpression expression) {
             var leftNode = expressionToNode(expression.Left);
             var rightNode = expressionToNode(expression.Right);
                 
-            if(leftNode is not MappingNode leftMappingNode || rightNode is not MappingNode rightMappingNode)
-                throw new InvalidOperationException();
+            if(leftNode is MappingNode leftMappingNode && rightNode is MappingNode rightMappingNode)
+                return new MappingNode([
+                    ..leftMappingNode,
+                    ..rightMappingNode
+                ]);
+            
+            if(leftNode is KeysNode leftKeysNode && rightNode is KeysNode rightKeysNode)
+                return new KeysNode([
+                    ..leftKeysNode,
+                    ..rightKeysNode
+                ]);
 
-            return new MappingNode([
-                ..leftMappingNode,
-                ..rightMappingNode
-            ]);
+            throw new InvalidOperationException();
         }
     }
 }

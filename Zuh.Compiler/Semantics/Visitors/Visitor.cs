@@ -2,8 +2,8 @@
 using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Semantics.Visitors {
-    // i know most professional projects use manual traversal with the double dispatch pattern,
-    // and while my first instinct was to use generic traversal, i tried to do it the professional way.
+    // i know most professional projects use manual traversal with the double dispatch pattern
+    // and while my first instinct was to use generic traversal, i tried to do it the professional way
     // i really did
     // but it ended up just not ever working the way i wanted it to
     // by the end of that, every bone in my body was telling me to use generic traversal

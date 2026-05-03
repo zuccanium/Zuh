@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
@@ -11,7 +12,6 @@ namespace Zuh.Compiler.Semantics.Visitors {
     public class SymbolDeclarationVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }
 
-        // TODO: FIGURE OUT HOW TO GIVE THE FUNCTION ITS PARAMETER SYMBOLS!!!
         protected override List<Overload> Overloads
             => [
                 new Overload<Function>((node, next) => {
@@ -52,7 +52,11 @@ namespace Zuh.Compiler.Semantics.Visitors {
                             FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
                                 Name = name,
                                 Function = functionDeclarationNode.Function,
-                                Parameters = [],
+                                Parameters = [
+                                    ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
+                                        .Values
+                                        .Cast<FunctionParameterSymbol>()
+                                ],
                                 Visibility = visibility
                             },
                             _ => throw new UnreachableException()
