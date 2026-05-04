@@ -21,10 +21,13 @@ namespace Zuh.Compiler.Generation {
                 IntersectionExpression intersectionExpression
                     => intersectionExpressionToNode(intersectionExpression),
                 
+                UnionExpression unionExpression
+                    => unionExpressionToNode(unionExpression),
+                
                 FunctionInvocationExpression functionInvocationExpression
                     => functionInvocationExpressionToNode(functionInvocationExpression),
                 
-                _ => throw new InvalidOperationException("idk how this happened")
+                _ => throw new InvalidOperationException($"unknown {nameof(Expression)} inheritor!!!")
             };
 
         private INode identifierExpressionToNode(IdentifierExpression expression)
@@ -69,20 +72,71 @@ namespace Zuh.Compiler.Generation {
         private INode intersectionExpressionToNode(IntersectionExpression expression) {
             var leftNode = expressionToNode(expression.Left);
             var rightNode = expressionToNode(expression.Right);
-                
-            if(leftNode is MappingNode leftMappingNode && rightNode is MappingNode rightMappingNode)
-                return new MappingNode([
-                    ..leftMappingNode,
-                    ..rightMappingNode
-                ]);
-            
-            if(leftNode is SumNode leftSumNode && rightNode is SumNode rightSumNode)
-                return new SumNode([
-                    ..leftSumNode,
-                    ..rightSumNode
-                ]);
 
-            throw new InvalidOperationException();
+            if(leftNode is MappingNode leftMappingNode && rightNode is MappingNode rightMappingNode) {
+                var node = new MappingNode();
+
+                foreach(var (key, leftValue) in leftMappingNode)
+                    if(rightMappingNode.TryGetValue(key, out var rightValue))
+                        node[key] = new MappingNode.Value() {
+                            IsOptional = leftValue.IsOptional || rightValue.IsOptional,
+                        
+                            // pray that the semantic analyzer handled the comparison earlier
+                            Node = leftValue.Node
+                        };
+
+                return node;
+            }
+
+            if(leftNode is SumNode leftSumNode && rightNode is SumNode rightSumNode) {
+                var node = new SumNode();
+                
+                foreach(var (key, leftValue) in leftSumNode)
+                    if(rightSumNode.TryGetValue(key, out var rightValue))
+                        node[key] = new SumNode.Value() {
+                            IsOptional = leftValue.IsOptional || rightValue.IsOptional,
+                        };
+
+                return node;
+            }
+
+            throw new InvalidOperationException("unknown intersection expression types");
+        }
+        
+        private INode unionExpressionToNode(UnionExpression expression) {
+            var leftNode = expressionToNode(expression.Left);
+            var rightNode = expressionToNode(expression.Right);
+
+            if(leftNode is MappingNode leftMappingNode && rightNode is MappingNode rightMappingNode) {
+                var node = new MappingNode([..leftMappingNode]);
+
+                foreach(var (key, newValue) in rightMappingNode)
+                    node[key] = new MappingNode.Value() {
+                        // still praying
+                        Node = newValue.Node,
+                        
+                        IsOptional = node.TryGetValue(key, out var oldValue)
+                            ? oldValue.IsOptional && newValue.IsOptional
+                            : newValue.IsOptional
+                    };
+
+                return node;
+            }
+
+            if(leftNode is SumNode leftSumNode && rightNode is SumNode rightSumNode) {
+                var node = new SumNode([..leftSumNode]);
+
+                foreach(var (key, newValue) in rightSumNode)
+                    node[key] = new SumNode.Value() {
+                        IsOptional = node.TryGetValue(key, out var oldValue)
+                            ? oldValue.IsOptional && newValue.IsOptional
+                            : newValue.IsOptional
+                    };
+
+                return node;
+            }
+
+            throw new InvalidOperationException("unknown union expression types");
         }
     }
 }

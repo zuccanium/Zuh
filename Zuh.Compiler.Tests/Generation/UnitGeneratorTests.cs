@@ -13,7 +13,7 @@ namespace Zuh.Compiler.Tests.Generation {
                 protected abstract INode SchemaNode { get; }
                 
                 [Fact]
-                public void Generate_SingleSchema_Works() {
+                public void Works() {
                     var schema = new ExpressionDeclaration() {
                         IsExport = true,
                         Name = new Label() {
@@ -57,11 +57,11 @@ namespace Zuh.Compiler.Tests.Generation {
                     
                     var root = generator.Generate();
                     
-                    Assert.Equivalent(root, new MappingNode() {
+                    Assert.Equivalent(new MappingNode() {
                         [nameof(schema)] = new MappingNode.Value() {
                             Node = SchemaNode
                         }
-                    });
+                    }, root);
                 }
             }
 
@@ -160,7 +160,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     };
             }
             
-            public class SingleKeysKey : TestSet {
+            public class SingleSumKey : TestSet {
                 protected override Schema Schema
                     => new Schema() {
                         Entries = [
@@ -192,7 +192,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     };
             }
             
-            public class MultipleKeysKeys : TestSet {
+            public class MultipleSumKey : TestSet {
                 protected override Schema Schema
                     => new Schema() {
                         Entries = [
@@ -241,6 +241,144 @@ namespace Zuh.Compiler.Tests.Generation {
                         ["c"] = new MappingNode.Value() {
                             Node = new ScalarNode()
                         },
+                    };
+            }
+            
+            public class UnionSumKey : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new ExpressionKey() {
+                                    Expression = new UnionExpression() {
+                                        Left = new SumExpression() {
+                                            Sum = new Sum() {
+                                                Entries = [
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "a"
+                                                            }
+                                                        }
+                                                    },
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "b"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        Right = new SumExpression() {
+                                            Sum = new Sum() {
+                                                Entries = [
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "c"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["a"] = new MappingNode.Value() {
+                            Node = new ScalarNode()
+                        },
+                        ["b"] = new MappingNode.Value() {
+                            Node = new ScalarNode()
+                        },
+                        ["c"] = new MappingNode.Value() {
+                            Node = new ScalarNode()
+                        },
+                    };
+            }
+            
+            public class IntersectionSumKey : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new ExpressionKey() {
+                                    Expression = new UnionExpression() {
+                                        Left = new SumExpression() {
+                                            Sum = new Sum() {
+                                                Entries = [
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "a"
+                                                            }
+                                                        }
+                                                    },
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "b"
+                                                            }
+                                                        }
+                                                    },
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "c"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        Right = new SumExpression() {
+                                            Sum = new Sum() {
+                                                Entries = [
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "a"
+                                                            }
+                                                        }
+                                                    },
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "b"
+                                                            }
+                                                        }
+                                                    },
+                                                    new SumEntry() {
+                                                        Key = new StaticKey() {
+                                                            Name = new Label() {
+                                                                Value = "d"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["a"] = new MappingNode.Value() {
+                            Node = new ScalarNode()
+                        },
+                        ["b"] = new MappingNode.Value() {
+                            Node = new ScalarNode()
+                        }
                     };
             }
             
@@ -320,7 +458,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     };
             }
             
-            public class SchemaIntersectionWorks : TestSet {
+            public class SchemaUnion : TestSet {
                 protected override Schema Schema
                     => new Schema() {
                         Entries = [
@@ -330,7 +468,7 @@ namespace Zuh.Compiler.Tests.Generation {
                                         Value = "key"
                                     }
                                 },
-                                Value = new IntersectionExpression() {
+                                Value = new UnionExpression() {
                                     Left = new SchemaExpression() {
                                         Schema = new Schema() {
                                             Entries = [
@@ -371,7 +509,137 @@ namespace Zuh.Compiler.Tests.Generation {
                                 },
                                 ["b"] = new MappingNode.Value() {
                                     Node = new ScalarNode()
+                                }
+                            }
+                        },
+                    };
+            }
+            
+            public class SchemaIntersection : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new StaticKey() {
+                                    Name = new Label() {
+                                        Value = "key"
+                                    }
                                 },
+                                Value = new IntersectionExpression() {
+                                    Left = new SchemaExpression() {
+                                        Schema = new Schema() {
+                                            Entries = [
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "a"
+                                                        }
+                                                    }
+                                                },
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "b"
+                                                        }
+                                                    }
+                                                },
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "c"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    Right = new SchemaExpression() {
+                                        Schema = new Schema() {
+                                            Entries = [
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "a"
+                                                        }
+                                                    }
+                                                },
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "b"
+                                                        }
+                                                    }
+                                                },
+                                                new SchemaEntry() {
+                                                    Key = new StaticKey() {
+                                                        Name = new Label() {
+                                                            Value = "d"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["key"] = new MappingNode.Value() {
+                            Node = new MappingNode() {
+                                ["a"] = new MappingNode.Value() {
+                                    Node = new ScalarNode()
+                                },
+                                ["b"] = new MappingNode.Value() {
+                                    Node = new ScalarNode()
+                                }
+                            }
+                        },
+                    };
+            }
+            
+            public class SumValue : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new StaticKey() {
+                                    Name = new Label() {
+                                        Value = "key"
+                                    }
+                                },
+                                Value = new SumExpression() {
+                                    Sum = new Sum() {
+                                        Entries = [
+                                            new SumEntry() {
+                                                Key = new StaticKey() {
+                                                    Name = new Label() {
+                                                        Value = "a"
+                                                    }
+                                                }
+                                            },
+                                            new SumEntry() {
+                                                Key = new StaticKey() {
+                                                    Name = new Label() {
+                                                        Value = "b"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["key"] = new MappingNode.Value() {
+                            Node = new SumNode() {
+                                ["a"] = new SumNode.Value(),
+                                ["b"] = new SumNode.Value()
                             }
                         },
                     };
@@ -471,7 +739,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     
             var root = generator.Generate();
                     
-            Assert.Equivalent(root, new MappingNode() {
+            Assert.Equivalent(new MappingNode() {
                 [nameof(referencingSchema)] = new MappingNode.Value() {
                     Node = new MappingNode() {
                         [referenceKey] = new MappingNode.Value() {
@@ -483,7 +751,7 @@ namespace Zuh.Compiler.Tests.Generation {
                         }
                     }
                 }
-            });
+            }, root);
         }
         
         [Fact]
@@ -630,7 +898,7 @@ namespace Zuh.Compiler.Tests.Generation {
                     
             var root = generator.Generate();
                     
-            Assert.Equivalent(root, new MappingNode() {
+            Assert.Equivalent(new MappingNode() {
                 [nameof(referencingSchema)] = new MappingNode.Value() {
                     Node = new MappingNode() {
                         [referenceKey] = new MappingNode.Value() {
@@ -646,7 +914,7 @@ namespace Zuh.Compiler.Tests.Generation {
                         }
                     }
                 }
-            });
+            }, root);
         }
     }
 }

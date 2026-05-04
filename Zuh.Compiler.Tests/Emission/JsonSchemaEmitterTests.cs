@@ -14,7 +14,7 @@ namespace Zuh.Compiler.Tests.Emission {
                 var expected = SchemaResult;
                 var emitted = emitter.Emit(Root);
                 
-                Assert.Equivalent(emitted, expected);
+                Assert.Equivalent(expected, emitted);
             }
         }
 
@@ -99,6 +99,72 @@ namespace Zuh.Compiler.Tests.Emission {
                           "a"
                         ]
                       }
+                    }
+                  },
+                  "required": [
+                    "key"
+                  ]
+                }
+                """;
+        }
+        
+        public class SumValue : TestSet {
+            protected override MappingNode Root
+                => new MappingNode() {
+                    ["key"] = new MappingNode.Value() {
+                        Node = new SumNode() {
+                            ["a"] = new SumNode.Value(),
+                            ["b"] = new SumNode.Value()
+                        }
+                    }
+                };
+            
+            protected override string SchemaResult
+                // language=json
+                => """
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key"
+                  ]
+                }
+                """;
+        }
+
+        public class SumValueWithOptionalKey : TestSet {
+            protected override MappingNode Root
+                => new MappingNode() {
+                    ["key"] = new MappingNode.Value() {
+                        Node = new SumNode() {
+                            ["a"] = new SumNode.Value(),
+                            ["b"] = new SumNode.Value() {
+                                IsOptional = true
+                            }
+                        }
+                    }
+                };
+            
+            protected override string SchemaResult
+                // language=json
+                => """
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b"
+                      ]
                     }
                   },
                   "required": [

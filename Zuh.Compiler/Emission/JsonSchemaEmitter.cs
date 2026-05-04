@@ -10,8 +10,9 @@ namespace Zuh.Compiler.Emission {
             => node switch {
                 MappingNode mappingNode => mappingNodeToSchema(mappingNode),
                 ArrayNode arrayNode => arrayNodeToSchema(arrayNode),
+                SumNode sumNode => sumNodeToSchema(sumNode),
                 ScalarNode scalarNode => scalarNodeToSchema(scalarNode),
-                _ => throw new NotImplementedException()
+                _ => throw new InvalidOperationException($"unexpected {nameof(INode)} inheritor!!!")
             };
 
         private JSchema mappingNodeToSchema(MappingNode node) {
@@ -37,6 +38,18 @@ namespace Zuh.Compiler.Emission {
                 }
             };
             
+            return schema;
+        }
+
+        private JSchema sumNodeToSchema(SumNode node) {
+            var schema = new JSchema() {
+                Type = JSchemaType.String,
+            };
+            
+            // please give me a setter 😭
+            foreach(var (key, value) in node)
+                schema.Enum.Add(key);
+
             return schema;
         }
         

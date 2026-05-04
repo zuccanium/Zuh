@@ -12,6 +12,7 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, FunctionInvocationExpression> FunctionInvocationExpression = null!;
         internal static Parser<char, Func<Expression, Expression>> ArrayProtoExpression = null!;
         internal static Parser<char, Func<Expression, Expression, Expression>> IntersectionProtoExpression = null!;
+        internal static Parser<char, Func<Expression, Expression, Expression>> UnionProtoExpression = null!;
         internal static Parser<char, Expression> Expression = null!;
 
         private static void initializeExpressions() {
@@ -56,6 +57,14 @@ namespace Zuh.Compiler.Parsing {
                 = Token("&")
                     .Select<Func<Expression, Expression, Expression>>(
                         _ => (left, right) => new IntersectionExpression() {
+                            Left = left,
+                            Right = right
+                        });
+            
+            UnionProtoExpression
+                = Token("|")
+                    .Select<Func<Expression, Expression, Expression>>(
+                        _ => (left, right) => new UnionExpression() {
                             Left = left,
                             Right = right
                         });

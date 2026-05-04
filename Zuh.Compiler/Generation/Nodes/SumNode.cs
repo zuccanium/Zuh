@@ -2,18 +2,17 @@
     /// <summary>
     /// node that represents a sum.
     /// </summary>
-    public class SumNode : List<SumNode.Value>, INode {
+    public class SumNode : Dictionary<string, SumNode.Value>, INode {
         /// <summary>
-        /// encapsulates a key and whether its optional.
+        /// encapsulates whether a key is optional.
         /// </summary>
         public class Value {
-            public required string Key { get; set; }
             public bool IsOptional { get; set; } = false;
         }
         
         public SumNode() { }
         
-        public SumNode(IEnumerable<Value> collection)
+        public SumNode(IEnumerable<KeyValuePair<string, Value>> collection)
             : base(collection) { }
     }
 }

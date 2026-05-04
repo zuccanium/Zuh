@@ -8,28 +8,15 @@ namespace Zuh.Compiler.Generation {
             var node = new MappingNode();
             
             foreach(var entry in schema.Entries) {
-                var keys = entry.Key switch {
-                    StaticKey staticKey
-                        => new SumNode([new SumNode.Value() {
-                            Key = staticKey.Name.Value,
-                            IsOptional = entry.Key.IsOptional
-                        }]),
-
-                    ExpressionKey expressionKey
-                        => expressionToNode(expressionKey.Expression) is SumNode sumNode
-                            ? sumNode
-                            : throw new InvalidOperationException(),
-                    
-                    _ => throw new InvalidOperationException()
-                };
+                var sum = keyToSumNode(entry.Key);
                 
                 var valueNode = entry.Value is { } expressionValue
                     ? expressionToNode(expressionValue)
                     : new ScalarNode();
 
-                foreach(var key in keys)
-                    node[key.Key] = new MappingNode.Value() {
-                        IsOptional = key.IsOptional,
+                foreach(var (key, value) in sum)
+                    node[key] = new MappingNode.Value() {
+                        IsOptional = value.IsOptional,
                         Node = valueNode
                     };
             }
@@ -41,7 +28,8 @@ namespace Zuh.Compiler.Generation {
             var node = new SumNode();
 
             foreach(var entry in sum.Entries)
-                node.AddRange(keyToSumNode(entry.Key));
+                foreach (var (key, value) in keyToSumNode(entry.Key))
+                    node[key] = value;
 
             return node;
         }
@@ -55,14 +43,13 @@ namespace Zuh.Compiler.Generation {
             }
 
             if(key is StaticKey staticKey)
-                return [
-                    new SumNode.Value() {
-                        Key = staticKey.Name.Value,
+                return new SumNode() {
+                    [staticKey.Name.Value] = new SumNode.Value() {
                         IsOptional = staticKey.IsOptional
                     }
-                ];
+                };
 
-            throw new InvalidOperationException();
+            throw new InvalidOperationException($"unknown {nameof(Key)} inheritor!!!");
         }
         
         private INode identifierToNode(Identifier identifier) {
@@ -76,7 +63,7 @@ namespace Zuh.Compiler.Generation {
                 ExpressionSymbol schemaSymbol
                     => expressionToNode(schemaSymbol.Expression),
                 
-                _ => throw new InvalidOperationException()
+                _ => throw new InvalidOperationException("unknown symbol type")
             };
         }
     }
