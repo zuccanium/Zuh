@@ -11,9 +11,11 @@ namespace Zuh.Compiler.Parsing {
         private static void initializeDefinitionsSum() {
             SumEntry
                 = WithLocation(
-                    Key.Select(key => new SumEntry() {
-                        Key = key
-                    })
+                    WithTrivia(
+                        Key.Select(key => new SumEntry() {
+                            Key = key
+                        })
+                    )
                 );
             
             Sum

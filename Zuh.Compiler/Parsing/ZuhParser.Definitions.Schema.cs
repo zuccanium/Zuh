@@ -33,13 +33,15 @@ namespace Zuh.Compiler.Parsing {
         private static void initializeDefinitionsSchema() {
             SchemaEntry
                 = WithLocation(
-                    Map(
-                        (key, value) => new SchemaEntry() {
-                            Key = key,
-                            Value = value.GetValueOrDefault()
-                        },
-                        Key,
-                        Rec(() => Expression!).Optional()
+                    WithTrivia(
+                        Map(
+                            (key, value) => new SchemaEntry() {
+                                Key = key,
+                                Value = value.GetValueOrDefault()
+                            },
+                            Key,
+                            Rec(() => Expression!).Optional()
+                        )
                     )
                 );
             
