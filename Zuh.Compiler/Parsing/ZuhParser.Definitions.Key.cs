@@ -10,16 +10,40 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, StaticKey> StaticKey = null!;
         internal static Parser<char, Key> Key = null!;
 
+        internal static Parser<char, TDynamicKey> CreateSchemaEntryDynamicKey<TDynamicKey>(
+            Parser<char, TDynamicKey> keyParser)
+            where TDynamicKey : DynamicKey
+            => (
+                from openCaret in Token("<")
+                from key in keyParser
+                from closeCaret in Token(">")
+                select key with {
+                    SourceSpan = openCaret.SourceSpan - closeCaret.SourceSpan
+                }
+            );
+
+        internal static Parser<char, TKey> CreateSchemaEntryKey<TKey>(
+            Parser<char, TKey> keyParser)
+            where TKey : Key
+            => (
+                from key in keyParser
+                from optional in Try(Token("?").Optional())
+                select key with {
+                    IsOptional = optional.HasValue,
+                    SourceSpan = optional.HasValue
+                        ? key.SourceSpan - optional.Value.SourceSpan
+                        : key.SourceSpan
+                }
+            );
+
         private static void initializeDefinitionsKey() {
             ExpressionKey
                 = CreateSchemaEntryKey(
                     CreateSchemaEntryDynamicKey(
-                        WithLocation(
-                            Rec(() => Expression)
-                                .Select(expression => new ExpressionKey() {
-                                    Expression = expression
-                                })
-                        )
+                        from expression in Rec(() => Expression)
+                        select new ExpressionKey() {
+                            Expression = expression
+                        }
                     )
                 );
 
@@ -30,9 +54,10 @@ namespace Zuh.Compiler.Parsing {
             
             StaticKey
                 = CreateSchemaEntryKey(
-                    Label.Select(label => new StaticKey() {
+                    from label in Label
+                    select new StaticKey() {
                         Name = label
-                    })
+                    }
                 );
 
             Key

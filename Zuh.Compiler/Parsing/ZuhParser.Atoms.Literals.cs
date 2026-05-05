@@ -10,16 +10,14 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeAtomsLiterals() {
             StringLiteral
-                = WithLocation(
-                    AnyCharExcept('"')
-                        .ManyString()
-                        .Between(
-                            Char('"'),
-                            Char('"')
-                        )
-                        .Select(str => new StringLiteral() {
-                            Value = str
-                        })
+                = (
+                    from openQuote in Token(Char('"'))
+                    from str in AnyCharExcept('"').ManyString()
+                    from closeQuote in Token(Char('"'))
+                    select new StringLiteral() {
+                        Value = str,
+                        SourceSpan = openQuote.SourceSpan - closeQuote.SourceSpan
+                    }
                 );
             
             Literal

@@ -10,28 +10,27 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeDefinitionsFunction() {
             FunctionParameter
-                = Map(
-                    (name, type) => new FunctionParameter() {
+                = (
+                    from name in Label
+                    from type in LowerEnum<FunctionParameter.FunctionParameterType>()
+                    select new FunctionParameter() {
                         Name = name,
-                        Type = type
-                    },
-                    Label,
-                    LowerEnum<FunctionParameter.FunctionParameterType>()
+                        Type = type.Token,
+                        SourceSpan = name.SourceSpan - type.SourceSpan
+                    }
                 );
 
             Function
-                = Map(
-                    (parameters, expression) => new Function() {
+                = (
+                    from openParenthesis in Token("(")
+                    from parameters in FunctionParameter.Separated(EntrySeparator)
+                    from closeParenthesis in Token(")")
+                    from expression in Rec(() => Expression)
+                    select new Function() {
                         Parameters = [..parameters],
-                        Expression = expression
-                    },
-                    FunctionParameter
-                        .Separated(EntrySeparator)
-                        .Between(
-                            Token("("),
-                            Token(")")
-                        ),
-                    Rec(() => Expression)
+                        Expression = expression,
+                        SourceSpan = openParenthesis.SourceSpan - expression.SourceSpan
+                    }
                 );
         }
     }

@@ -10,35 +10,33 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, Declaration> Declaration = null!;
         
         internal static Parser<char, TDeclaration> CreateDeclaration<TDeclaration>(
-            Parser<char, TDeclaration> parser
+            Parser<char, TDeclaration> declarationParser
         ) where TDeclaration : Declaration
             => CreateStatement(
-                Map(
-                    (export, declaration) => declaration with {
-                        IsExport = export.HasValue
-                    },
-                    Keyword("export").Optional(),
-                    parser
-                )
+                from export in Keyword("export").Optional()
+                from declaration in declarationParser
+                select declaration with {
+                    IsExport = export.HasValue
+                }
             );
         
         // the monster
-        internal static Parser<char, TDeclaration> CreateDeclarationWrapped<TWrapped, TDeclaration>(
-            Parser<char, TWrapped> parser,
-            Func<Label, TWrapped, TDeclaration> func
-        ) where TWrapped : ZuhNode where TDeclaration : Declaration
+        internal static Parser<char, TDeclaration> CreateLabeledDefinition<TDefinition, TDeclaration>(
+            Parser<char, TDefinition> definitionParser,
+            Func<Label, TDefinition, TDeclaration> selector
+        ) where TDefinition : ZuhNode where TDeclaration : Declaration
             => WithLocation(
-                Map(
-                    func,
-                    Label,
-                    parser
-                )
+                from label in Label
+                from definition in definitionParser
+                select selector(label, definition) with {
+                    SourceSpan = label.SourceSpan - definition.SourceSpan
+                }
             );
             
         private static void initializeStatementsDeclarations() {
             FunctionDeclaration
                 = CreateDeclaration(
-                    CreateDeclarationWrapped(
+                    CreateLabeledDefinition(
                         Function,
                         (name, function) => new FunctionDeclaration() {
                             Name = name,
@@ -49,7 +47,7 @@ namespace Zuh.Compiler.Parsing {
             
             ExpressionDeclaration
                 = CreateDeclaration(
-                    CreateDeclarationWrapped(
+                    CreateLabeledDefinition(
                         Expression,
                         (name, expression) => new ExpressionDeclaration() {
                             Name = name,
