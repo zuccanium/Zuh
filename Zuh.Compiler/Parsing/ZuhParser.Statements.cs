@@ -11,7 +11,7 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, TStatement> CreateStatement<TStatement>(
             Parser<char, TStatement> statementParser)
             where TStatement : Statement
-            => WithDocumentation(
+            => (
                 from parser in statementParser
                 from semicolon in Token(";")
                 select parser with {

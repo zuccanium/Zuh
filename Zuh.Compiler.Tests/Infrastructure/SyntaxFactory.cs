@@ -16,5 +16,19 @@ namespace Zuh.Compiler.Tests.Infrastructure {
 
             return (node, () => getter());
         }
+
+        public static MappingNode CreateDocumentationLine(out Func<DocumentationLine> getter, string value) {
+            var node = Mark(out var documentationLineMarker, $"///{value}");
+
+            getter = () => new DocumentationLine() {
+                Value = value,
+                SourceSpan = documentationLineMarker.SourceSpan
+            };
+
+            return node;
+        }
+
+        public static MappingNode CreateDocumentationLine(out Func<DocumentationLine> getter)
+            => CreateDocumentationLine(out getter, Placeholder);
     }
 }

@@ -14,7 +14,6 @@ namespace Zuh.Compiler.Tests.Parsing {
             
             var expected = new ImportStatement() {
                 Module = stringLiteralGetter(),
-                DocumentationLines = [],
                 SourceSpan = importStatement.SourceSpan
             };
             

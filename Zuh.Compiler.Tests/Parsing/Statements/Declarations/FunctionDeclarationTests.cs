@@ -6,42 +6,34 @@ using static Zuh.Compiler.Tests.Infrastructure.SyntaxFactory;
 
 namespace Zuh.Compiler.Tests.Parsing.Statements.Declarations {
     public class FunctionDeclarationTests {
-        [Fact]
-        public void Parse_ValidFunctionDeclarationWithoutExport_Works() {
-            var labelNode = CreateLabel(out var labelGetter);
-            var functionNode = CreateFunction(out var functionGetter);
+        public class Parse_ValidFunctionDeclaration_Works_Data : TheoryData<string, FunctionDeclaration> {
+            public Parse_ValidFunctionDeclaration_Works_Data() {
+                for(var i = 0; i < 5; i++) {
+                    add(i, false);
+                    add(i, true);
+                }
+            }
             
-            Resolve(Mark(out var functionDeclarationMarker, $"{labelNode} {functionNode};"));
-            
-            var result = ZuhParser.FunctionDeclaration.Parse(functionDeclarationMarker.Value);
+            private void add(int documentationCount, bool isExport) {
+                var functionNode = CreateFunction(out var functionGetter);
 
-            var expected = new FunctionDeclaration() {
-                Name = labelGetter(),
-                Function = functionGetter(),
-                DocumentationLines = [],
-                SourceSpan = functionDeclarationMarker.SourceSpan
-            };
-            
-            Assert.True(result.Success);
-            Assert.Equivalent(expected, result.Value);
+                DeclarationTests.AddDefinitionDeclaration(
+                    documentationCount,
+                    isExport,
+                    functionNode,
+                    Add,
+                    (name) => new FunctionDeclaration() {
+                        Name = name,
+                        Function = functionGetter()
+                    }
+                );
+            }
         }
         
-        [Fact]
-        public void Parse_ValidFunctionDeclarationWithExport_Works() {
-            var labelNode = CreateLabel(out var labelGetter);
-            var functionNode = CreateFunction(out var functionGetter);
-            
-            Resolve(Mark(out var functionDeclarationMarker, $"export {labelNode} {functionNode};"));
-            
-            var result = ZuhParser.FunctionDeclaration.Parse(functionDeclarationMarker.Value);
-
-            var expected = new FunctionDeclaration() {
-                IsExport = true,
-                Name = labelGetter(),
-                Function = functionGetter(),
-                DocumentationLines = [],
-                SourceSpan = functionDeclarationMarker.SourceSpan
-            };
+        [Theory]
+        [ClassData(typeof(Parse_ValidFunctionDeclaration_Works_Data))]
+        public void Parse_ValidExpressionDeclarationWithoutExport_Works(string value, FunctionDeclaration expected) {
+            var result = ZuhParser.FunctionDeclaration.Parse(value);
             
             Assert.True(result.Success);
             Assert.Equivalent(expected, result.Value);

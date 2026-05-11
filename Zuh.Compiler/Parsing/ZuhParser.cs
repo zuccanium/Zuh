@@ -52,15 +52,19 @@ namespace Zuh.Compiler.Parsing {
                 from documentation in Try(DocumentationLine).Many()
                 from below in belowParser
                 select below with {
-                    DocumentationLines = [..documentation]
+                    DocumentationLines = [..documentation],
+                    SourceSpan = documentation.FirstOrDefault() is { } first
+                        ? first.SourceSpan - below.SourceSpan
+                        : below.SourceSpan
                 }
             );
 
         static ZuhParser() {
             CommentLine
                 = (
-                    from start in SkipWhitespaces.Then(WithSource(String("//")))
-                    from body in WithSource(AnyCharExcept('\n', '\r').ManyString())
+                    from start in SkipWhitespaces.Then(String("//"))
+                    from firstCharacter in AnyCharExcept("/")
+                    from body in AnyCharExcept('\n', '\r').ManyString()
                     select Unit.Value
                 );
 

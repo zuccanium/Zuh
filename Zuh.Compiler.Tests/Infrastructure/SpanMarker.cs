@@ -61,7 +61,8 @@ namespace Zuh.Compiler.Tests.Infrastructure {
                     });
                 }
                 
-                MappingNode.Children.RemoveAt(MappingNode.Children.Count - 1);
+                if(!joined.IncludeEnd)
+                    MappingNode.Children.RemoveAt(MappingNode.Children.Count - 1);
             }
         }
         

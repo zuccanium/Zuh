@@ -1,47 +1,40 @@
 ﻿using Pidgin;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Parsing;
+using Zuh.Compiler.Tests.Infrastructure.Extensions;
 using static Zuh.Compiler.Tests.Infrastructure.SpanMarker;
 using static Zuh.Compiler.Tests.Infrastructure.SyntaxFactory;
 
 namespace Zuh.Compiler.Tests.Parsing.Statements.Declarations {
     public class ExpressionDeclarationTests {
-        [Fact]
-        public void Parse_ValidExpressionDeclarationWithoutExport_Works() {
-            var labelNode = CreateLabel(out var labelGetter);
-            var expressionNode = CreateExpression(out var expressionGetter);
+        public class Parse_ValidExpressionDeclaration_Works_Data : TheoryData<string, ExpressionDeclaration> {
+            public Parse_ValidExpressionDeclaration_Works_Data() {
+                for(var i = 0; i < 5; i++) {
+                    add(i, false);
+                    add(i, true);
+                }
+            }
             
-            Resolve(Mark(out var expressionDeclarationMarker, $"{labelNode} {expressionNode};"));
-            
-            var result = ZuhParser.ExpressionDeclaration.Parse(expressionDeclarationMarker.Value);
+            private void add(int documentationCount, bool isExport) {
+                var expressionNode = CreateExpression(out var expressionGetter);
 
-            var expected = new ExpressionDeclaration() {
-                Name = labelGetter(),
-                Expression = expressionGetter(),
-                DocumentationLines = [],
-                SourceSpan = expressionDeclarationMarker.SourceSpan
-            };
-            
-            Assert.True(result.Success);
-            Assert.Equivalent(expected, result.Value);
+                DeclarationTests.AddDefinitionDeclaration(
+                    documentationCount,
+                    isExport,
+                    expressionNode,
+                    Add,
+                    (name) => new ExpressionDeclaration() {
+                        Name = name,
+                        Expression = expressionGetter()
+                    }
+                );
+            }
         }
         
-        [Fact]
-        public void Parse_ValidExpressionDeclarationWithExport_Works() {
-            var labelNode = CreateLabel(out var labelGetter);
-            var expressionNode = CreateExpression(out var expressionGetter);
-            
-            Resolve(Mark(out var expressionDeclarationMarker, $"export {labelNode} {expressionNode};"));
-            
-            var result = ZuhParser.ExpressionDeclaration.Parse(expressionDeclarationMarker.Value);
-
-            var expected = new ExpressionDeclaration() {
-                IsExport = true,
-                Name = labelGetter(),
-                Expression = expressionGetter(),
-                DocumentationLines = [],
-                SourceSpan = expressionDeclarationMarker.SourceSpan
-            };
+        [Theory]
+        [ClassData(typeof(Parse_ValidExpressionDeclaration_Works_Data))]
+        public void Parse_ValidExpressionDeclarationWithoutExport_Works(string value, ExpressionDeclaration expected) {
+            var result = ZuhParser.ExpressionDeclaration.Parse(value);
             
             Assert.True(result.Success);
             Assert.Equivalent(expected, result.Value);

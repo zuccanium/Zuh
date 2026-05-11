@@ -1,12 +1,12 @@
 ﻿namespace Zuh.Compiler.Tests.Infrastructure.Extensions {
     public static class IEnumerableExtensions {
-        public record struct MarkedAsJoined<T>(IEnumerable<T> Enumerable, string Joiner);
+        public record struct MarkedAsJoined<T>(IEnumerable<T> Enumerable, string Joiner, bool IncludeEnd);
 
         public delegate TReturn SelectOutDelegate<TSource, TOut, TReturn>(TSource source, out TOut outValue);
         
         extension<T>(IEnumerable<T> @this) {
-            public MarkedAsJoined<T> MarkAsJoined(string str)
-                => new(@this, str);
+            public MarkedAsJoined<T> MarkAsJoined(string str, bool includeEnd = false)
+                => new(@this, str, includeEnd);
 
             /// <summary>
             /// acts like Select but allows you to accumulate out parameters as well.

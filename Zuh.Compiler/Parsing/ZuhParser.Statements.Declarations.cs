@@ -13,14 +13,16 @@ namespace Zuh.Compiler.Parsing {
             Parser<char, TDeclaration> declarationParser
         ) where TDeclaration : Declaration
             => CreateStatement(
-                from export in Try(Keyword("export")).Optional()
-                from declaration in declarationParser
-                select declaration with {
-                    IsExport = export.HasValue,
-                    SourceSpan = export.HasValue
-                        ? export.Value.SourceSpan - declaration.SourceSpan
-                        : declaration.SourceSpan
-                }
+                WithDocumentation(
+                    from export in Try(Keyword("export")).Optional()
+                    from declaration in declarationParser
+                    select declaration with {
+                        IsExport = export.HasValue,
+                        SourceSpan = export.HasValue
+                            ? export.Value.SourceSpan - declaration.SourceSpan
+                            : declaration.SourceSpan
+                    }
+                )
             );
         
         // the monster
