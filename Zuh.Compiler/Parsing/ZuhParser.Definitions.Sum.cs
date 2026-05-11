@@ -10,17 +10,18 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeDefinitionsSum() {
             SumEntry
-                = WithTrivia(
+                = WithDocumentation(
                     from key in Key
                     select new SumEntry() {
-                        Key = key
+                        Key = key,
+                        SourceSpan = key.SourceSpan
                     }
                 );
             
             Sum
                 = (
                     from openBracket in Token("[")
-                    from entries in SumEntry.Separated(EntrySeparator)
+                    from entries in SumEntry.Separated(Try(EntrySeparator))
                     from closeBracket in Token("]")
                     select new Sum() {
                         Entries = [..entries],

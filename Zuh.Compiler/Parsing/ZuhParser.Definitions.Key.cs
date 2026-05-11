@@ -10,7 +10,7 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, StaticKey> StaticKey = null!;
         internal static Parser<char, Key> Key = null!;
 
-        internal static Parser<char, TDynamicKey> CreateSchemaEntryDynamicKey<TDynamicKey>(
+        internal static Parser<char, TDynamicKey> CreateDynamicKey<TDynamicKey>(
             Parser<char, TDynamicKey> keyParser)
             where TDynamicKey : DynamicKey
             => (
@@ -22,12 +22,12 @@ namespace Zuh.Compiler.Parsing {
                 }
             );
 
-        internal static Parser<char, TKey> CreateSchemaEntryKey<TKey>(
+        internal static Parser<char, TKey> CreateKey<TKey>(
             Parser<char, TKey> keyParser)
             where TKey : Key
             => (
                 from key in keyParser
-                from optional in Try(Token("?").Optional())
+                from optional in Try(Token("?")).Optional()
                 select key with {
                     IsOptional = optional.HasValue,
                     SourceSpan = optional.HasValue
@@ -38,8 +38,8 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeDefinitionsKey() {
             ExpressionKey
-                = CreateSchemaEntryKey(
-                    CreateSchemaEntryDynamicKey(
+                = CreateKey(
+                    CreateDynamicKey(
                         from expression in Rec(() => Expression)
                         select new ExpressionKey() {
                             Expression = expression
@@ -53,10 +53,11 @@ namespace Zuh.Compiler.Parsing {
                 );
             
             StaticKey
-                = CreateSchemaEntryKey(
+                = CreateKey(
                     from label in Label
                     select new StaticKey() {
-                        Name = label
+                        Name = label,
+                        SourceSpan = label.SourceSpan
                     }
                 );
 

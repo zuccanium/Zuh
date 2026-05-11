@@ -8,26 +8,29 @@ namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
         internal record struct TokenAndSource<T>(T Token, SourceSpan SourceSpan);
         
-        internal static readonly Parser<char, string> SingleLineComment;
-        internal static readonly Parser<char, string> MultiLineComment;
-        internal static readonly Parser<char, IEnumerable<string>> Trivia;
+        internal static readonly Parser<char, Unit> CommentLine;
         internal static readonly Parser<char, Unit> EntrySeparator;
+        internal static readonly Parser<char, Unit> SkipGarbage;
+        internal static readonly Parser<char, DocumentationLine> DocumentationLine;
         internal static readonly Parser<char, ZuhFile> ZuhFile;
 
-        internal static Parser<char, TokenAndSource<T>> Token<T>(Parser<char, T> parser)
-            => SkipWhitespaces
-                .Then(
-                    from start in CurrentOffset
-                    from token in parser
-                    from end in CurrentOffset
-                    select new TokenAndSource<T>() {
-                        Token = token,
-                        SourceSpan = new SourceSpan() {
-                            Start = start,
-                            End = end
-                        }
+        internal static Parser<char, TokenAndSource<T>> WithSource<T>(Parser<char, T> parser)
+            => (
+                from start in CurrentOffset
+                from token in parser
+                from end in CurrentOffset
+                select new TokenAndSource<T>() {
+                    Token = token,
+                    SourceSpan = new SourceSpan() {
+                        Start = start,
+                        End = end
                     }
-                );
+                }
+            );
+        
+        internal static Parser<char, TokenAndSource<T>> Token<T>(Parser<char, T> parser)
+            => SkipGarbage
+                .Then(WithSource(parser));
 
         internal static Parser<char, TokenAndSource<string>> Token(string token)
             => Token(String(token));
@@ -43,51 +46,40 @@ namespace Zuh.Compiler.Parsing {
                 )
                 select System.Enum.Parse<T>(value, true)
             );
-
-        internal static Parser<char, T> WithLocation<T>(Parser<char, T> parser) where T : ZuhNode
-            => Map(
-                (start, node, end)
-                    => node with {
-                        SourceSpan = new SourceSpan() {
-                            Start = start,
-                            End = end
-                        }
-                    },
-                CurrentOffset,
-                parser,
-                CurrentOffset
-            );
         
-        internal static Parser<char, T> WithTrivia<T>(Parser<char, T> parser) where T : ZuhNode, ITriviaHolder
-            => Map(
-                (trivia, triviaHolder) => triviaHolder with {
-                    TriviaLines = [..trivia.Value]
-                },
-                Trivia.Optional(),
-                parser
+        internal static Parser<char, T> WithDocumentation<T>(Parser<char, T> belowParser) where T : ZuhNode, IDocumentationHolder
+            => (
+                from documentation in Try(DocumentationLine).Many()
+                from below in belowParser
+                select below with {
+                    DocumentationLines = [..documentation]
+                }
             );
 
         static ZuhParser() {
-            SingleLineComment
-                = Try(String("//"))
-                    .Then(AnyCharExcept('\n', '\r').ManyString());
-            
-            MultiLineComment
-                = Try(String("/*"))
-                    .Then(
-                        Any
-                            .Until(Try(String("*/")))
-                            .Select(chars => new string(chars.ToArray()))
-                    );
-            
-            Trivia
+            CommentLine
+                = (
+                    from start in SkipWhitespaces.Then(WithSource(String("//")))
+                    from body in WithSource(AnyCharExcept('\n', '\r').ManyString())
+                    select Unit.Value
+                );
+
+            SkipGarbage
                 = OneOf(
-                    SingleLineComment.Select(str => str.Trim()),
-                    MultiLineComment.Select(str => str.Trim()),
-                    Whitespace.AtLeastOnce().ThenReturn("")
+                    Try(Whitespace).ThenReturn(Unit.Value),
+                    Try(CommentLine)
                 )
-                    .Many()
-                    .Select(results => results.Where(str => !string.IsNullOrWhiteSpace(str)));
+                    .SkipMany();
+
+            DocumentationLine
+                = (
+                    from start in SkipGarbage.Then(WithSource(String("///")))
+                    from body in WithSource(AnyCharExcept('\n', '\r').ManyString())
+                    select new DocumentationLine() {
+                        Value = body.Token,
+                        SourceSpan = start.SourceSpan - body.SourceSpan
+                    }
+                );
 
             EntrySeparator
                 = Token(",")
@@ -97,17 +89,19 @@ namespace Zuh.Compiler.Parsing {
             initializeDefinitions();
             initializeExpressions();
             initializeStatements();
-            
+
             ZuhFile
-                = WithLocation(
-                    SkipWhitespaces
-                        .Then(
-                            Statement
-                                .Many()
-                                .Select(statements => new ZuhFile() {
-                                    RootStatements = [..statements]
-                                })
-                        )
+                = (
+                    from statements in Statement.Many()
+                    select new ZuhFile() {
+                        RootStatements = [..statements],
+                        SourceSpan = statements.Any()
+                            ? statements.First().SourceSpan - statements.Last().SourceSpan
+                            : new SourceSpan() {
+                                Start = 0,
+                                End = 0
+                            }
+                    }
                 );
         }
 

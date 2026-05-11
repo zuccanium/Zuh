@@ -10,9 +10,9 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeDefinitionsSchema() {
             SchemaEntry
-                = (
+                = WithDocumentation(
                     from key in Key
-                    from value in Rec(() => Expression!).Optional()
+                    from value in Try(Rec(() => Expression).Optional())
                     select new SchemaEntry() {
                         Key = key,
                         Value = value.GetValueOrDefault(),
@@ -25,7 +25,7 @@ namespace Zuh.Compiler.Parsing {
             Schema
                 = (
                     from openBrace in Token("{")
-                    from entries in SchemaEntry.Separated(EntrySeparator)
+                    from entries in SchemaEntry.Separated(Try(EntrySeparator))
                     from closeBrace in Token("}")
                     select new Schema() {
                         Entries = [..entries],

@@ -1,6 +1,7 @@
 ﻿using Pidgin;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Parsing;
+using Zuh.Compiler.Tests.Infrastructure.Extensions;
 
 namespace Zuh.Compiler.Tests.Parsing.Atoms {
     public class IdentifierTests {
@@ -30,25 +31,25 @@ namespace Zuh.Compiler.Tests.Parsing.Atoms {
         }
         
         [Theory]
-        [InlineData("something", "")]
-        [InlineData("something", " ")]
-        [InlineData("something", "   ")]
-        public void Parse_ValidIdentifier_HasCorrectSourceSpan(string value, string padding) {
-            var result = ZuhParser.Identifier.Parse(value + padding);
+        [InlineData("", "something", "")]
+        [InlineData("", "something", " ")]
+        [InlineData(" ", "something", "")]
+        [InlineData(" ", "something", " ")]
+        [InlineData("", "something", "   ")]
+        [InlineData("   ", "something", "")]
+        [InlineData("   ", "something", "   ")]
+        public void Parse_ValidIdentifier_HasCorrectSourceSpan(string leftPadding, string name, string rightPadding) {
+            var value = leftPadding + name + rightPadding;
+            var result = ZuhParser.Identifier.Parse(value);
             
             Assert.True(result.Success);
 
             var expected = new Identifier() {
-                Value = value,
-                SourceSpan = new SourceSpan() {
-                    Start = 0,
-                    End = value.Length
-                }
+                Value = name,
+                SourceSpan = value.GetSpan(name)
             };
             
-            var actual = result.Value;
-            
-            Assert.Equivalent(expected, actual);
+            Assert.Equivalent(expected, result.Value);
         }
         
         [Theory]

@@ -23,7 +23,7 @@ namespace Zuh.Compiler.Parsing {
             Function
                 = (
                     from openParenthesis in Token("(")
-                    from parameters in FunctionParameter.Separated(EntrySeparator)
+                    from parameters in FunctionParameter.Separated(Try(EntrySeparator))
                     from closeParenthesis in Token(")")
                     from expression in Rec(() => Expression)
                     select new Function() {

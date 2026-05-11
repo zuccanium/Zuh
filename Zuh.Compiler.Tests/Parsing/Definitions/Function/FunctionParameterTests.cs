@@ -1,35 +1,47 @@
 ﻿using Pidgin;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Parsing;
+using static Zuh.Compiler.Tests.Infrastructure.SpanMarker;
+using static Zuh.Compiler.Tests.Infrastructure.SyntaxFactory;
 
 namespace Zuh.Compiler.Tests.Parsing.Definitions.Function {
     public class FunctionParameterTests {
+        public class Parse_ValidFunctionParameter_Works_Data : TheoryData<string, FunctionParameter> {
+            public Parse_ValidFunctionParameter_Works_Data() {
+                add("sum", FunctionParameter.FunctionParameterType.Sum);
+                add("schema", FunctionParameter.FunctionParameterType.Schema);
+            }
+
+            private void add(string name, FunctionParameter.FunctionParameterType type) {
+                Resolve(Mark(out var functionParameter, $"{CreateLabel(out var labelGetter)} {name}"));
+                    
+                Add(
+                    functionParameter.Value,
+                    new FunctionParameter() {
+                        Name = labelGetter(),
+                        Type = type,
+                        SourceSpan = functionParameter.SourceSpan
+                    }
+                );
+            }
+        }
+        
         [Theory]
-        [InlineData("name schema", "name", FunctionParameter.FunctionParameterType.Schema)]
-        [InlineData("name sum", "name", FunctionParameter.FunctionParameterType.Sum)]
-        public void Parse_ValidFunctionParameter_Works(string value, string name, FunctionParameter.FunctionParameterType type) {
+        [ClassData(typeof(Parse_ValidFunctionParameter_Works_Data))]
+        public void Parse_ValidFunctionParameter_Works(string value, FunctionParameter expected) {
             var result = ZuhParser.FunctionParameter.Parse(value);
             
             Assert.True(result.Success);
-
-            var expected = new FunctionParameter() {
-                Name = new Label() {
-                    Value = name,
-                    SourceSpan = new SourceSpan() {
-                        Start = 0,
-                        End = name.Length
-                    }
-                },
-                Type = type,
-                SourceSpan = new SourceSpan() {
-                    Start = 0,
-                    End = value.Length
-                }
-            };
-
-            var actual = result.Value;
+            Assert.Equivalent(expected, result.Value);
+        }
+        
+        [Theory]
+        [InlineData("withoutType")]
+        [InlineData("invalidType buh")]
+        public void Parse_InvalidFunctionParameter_Fails(string value) {
+            var result = ZuhParser.FunctionParameter.Parse(value);
             
-            Assert.Equivalent(expected, actual);
+            Assert.False(result.Success);
         }
     }
 }

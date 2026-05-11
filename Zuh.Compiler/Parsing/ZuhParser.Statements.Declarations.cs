@@ -13,10 +13,13 @@ namespace Zuh.Compiler.Parsing {
             Parser<char, TDeclaration> declarationParser
         ) where TDeclaration : Declaration
             => CreateStatement(
-                from export in Keyword("export").Optional()
+                from export in Try(Keyword("export")).Optional()
                 from declaration in declarationParser
                 select declaration with {
-                    IsExport = export.HasValue
+                    IsExport = export.HasValue,
+                    SourceSpan = export.HasValue
+                        ? export.Value.SourceSpan - declaration.SourceSpan
+                        : declaration.SourceSpan
                 }
             );
         
@@ -25,7 +28,7 @@ namespace Zuh.Compiler.Parsing {
             Parser<char, TDefinition> definitionParser,
             Func<Label, TDefinition, TDeclaration> selector
         ) where TDefinition : ZuhNode where TDeclaration : Declaration
-            => WithLocation(
+            => (
                 from label in Label
                 from definition in definitionParser
                 select selector(label, definition) with {
