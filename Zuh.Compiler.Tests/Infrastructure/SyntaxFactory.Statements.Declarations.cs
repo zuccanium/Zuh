@@ -34,7 +34,6 @@ namespace Zuh.Compiler.Tests.Infrastructure {
 
             getter = () => outerGetter(definitionGetter(), labelGetter()) with {
                 IsExport = value.IsExport,
-                DocumentationLines = [],
                 SourceSpan = definitionDeclarationMarker.SourceSpan
             };
 
@@ -49,7 +48,8 @@ namespace Zuh.Compiler.Tests.Infrastructure {
                 (declaration) => declaration.Expression,
                 (expression, label) => new ExpressionDeclaration() {
                     Name = label,
-                    Expression = expression
+                    Expression = expression,
+                    DocumentationLines = []
                 }
             );
         

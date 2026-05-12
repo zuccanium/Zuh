@@ -18,14 +18,37 @@ namespace Zuh.Compiler.Tests.Parsing.Statements.Declarations {
             private void add(int documentationCount, bool isExport) {
                 var expressionNode = CreateExpression(out var expressionGetter);
 
-                DeclarationTests.AddDefinitionDeclaration(
-                    documentationCount,
-                    isExport,
-                    expressionNode,
-                    Add,
-                    (name) => new ExpressionDeclaration() {
-                        Name = name,
-                        Expression = expressionGetter()
+                var documentationLineNodes = Enumerable.Range(0, documentationCount)
+                    .SelectWithOut(
+                        out var documentationLineGetters,
+                        (int _, out Func<DocumentationLine> outValue)
+                            => CreateDocumentationLine(out outValue)
+                    );
+                
+                var labelNode = CreateLabel(out var labelGetter);
+
+                var node = isExport
+                    ? Mark(
+                        out var expressionDeclarationMarker,
+                        $"{documentationLineNodes.MarkAsJoined("\n", true)}export {labelNode} {expressionNode};")
+                    
+                    : Mark(
+                        out expressionDeclarationMarker,
+                        $"{documentationLineNodes.MarkAsJoined("\n", true)}{labelNode} {expressionNode};");
+            
+                Resolve(node);
+
+                Add(
+                    expressionDeclarationMarker.Value,
+                    new ExpressionDeclaration() {
+                        Name = labelGetter(),
+                        Expression = expressionGetter(),
+                        IsExport = isExport,
+                        DocumentationLines = [
+                            ..documentationLineGetters
+                                .Select(getter => getter())
+                        ],
+                        SourceSpan = expressionDeclarationMarker.SourceSpan
                     }
                 );
             }

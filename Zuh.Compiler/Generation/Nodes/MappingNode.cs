@@ -13,6 +13,7 @@ namespace Zuh.Compiler.Generation.Nodes {
         public class Value {
             public required INode Node { get; init; }
             public bool IsOptional { get; init; } = false;
+            public string[]? Documentation { get; set; }
         }
         
         public MappingNode() { }

@@ -8,23 +8,33 @@ namespace Zuh.Compiler.Tests.Parsing.Statements.Declarations {
     public class FunctionDeclarationTests {
         public class Parse_ValidFunctionDeclaration_Works_Data : TheoryData<string, FunctionDeclaration> {
             public Parse_ValidFunctionDeclaration_Works_Data() {
-                for(var i = 0; i < 5; i++) {
-                    add(i, false);
-                    add(i, true);
-                }
+                add(false);
+                add(true);
             }
             
-            private void add(int documentationCount, bool isExport) {
+            private void add(bool isExport) {
                 var functionNode = CreateFunction(out var functionGetter);
 
-                DeclarationTests.AddDefinitionDeclaration(
-                    documentationCount,
-                    isExport,
-                    functionNode,
-                    Add,
-                    (name) => new FunctionDeclaration() {
-                        Name = name,
-                        Function = functionGetter()
+                var labelNode = CreateLabel(out var labelGetter);
+
+                var node = isExport
+                    ? Mark(
+                        out var functionDeclarationMarker,
+                        $"export {labelNode} {functionNode};")
+                    
+                    : Mark(
+                        out functionDeclarationMarker,
+                        $"{labelNode} {functionNode};");
+            
+                Resolve(node);
+
+                Add(
+                    functionDeclarationMarker.Value,
+                    new FunctionDeclaration() {
+                        Name = labelGetter(),
+                        Function = functionGetter(),
+                        IsExport = isExport,
+                        SourceSpan = functionDeclarationMarker.SourceSpan
                     }
                 );
             }
