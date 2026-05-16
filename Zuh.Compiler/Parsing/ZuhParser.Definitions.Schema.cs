@@ -8,52 +8,29 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, SchemaEntry> SchemaEntry = null!;
         internal static Parser<char, Schema> Schema = null!;
 
-        internal static Parser<char, TDynamicKey> CreateSchemaEntryDynamicKey<TDynamicKey>(
-            Parser<char, TDynamicKey> parser
-        ) where TDynamicKey : DynamicKey
-            => parser
-                .Between(
-                    Token("<"),
-                    Token(">")
-                );
-
-        internal static Parser<char, TKey> CreateSchemaEntryKey<TKey>(
-            Parser<char, TKey> parser
-        ) where TKey : Key
-            => WithLocation(
-                Map(
-                    (key, optional) => key with {
-                        IsOptional = optional.HasValue
-                    },
-                    parser,
-                    Try(Token("?").Optional())
-                )
-            );
-
         private static void initializeDefinitionsSchema() {
             SchemaEntry
-                = WithLocation(
-                    Map(
-                        (key, value) => new SchemaEntry() {
-                            Key = key,
-                            Value = value.GetValueOrDefault()
-                        },
-                        Key,
-                        Rec(() => Expression!).Optional()
-                    )
+                = WithDocumentation(
+                    from key in Key
+                    from value in Try(Rec(() => Expression).Optional())
+                    select new SchemaEntry() {
+                        Key = key,
+                        Value = value.GetValueOrDefault(),
+                        SourceSpan = value.HasValue
+                            ? key.SourceSpan - value.Value.SourceSpan
+                            : key.SourceSpan
+                    }
                 );
-            
+
             Schema
-                = WithLocation(
-                    SchemaEntry
-                        .Separated(EntrySeparator)
-                        .Between(
-                            Token("{"),
-                            Token("}")
-                        )
-                        .Select(entries => new Schema() {
-                            Entries = [..entries]
-                        })
+                = (
+                    from openBrace in Token("{")
+                    from entries in SchemaEntry.Separated(Try(EntrySeparator))
+                    from closeBrace in Token("}")
+                    select new Schema() {
+                        Entries = [..entries],
+                        SourceSpan = openBrace.SourceSpan - closeBrace.SourceSpan
+                    }
                 );
         }
     }

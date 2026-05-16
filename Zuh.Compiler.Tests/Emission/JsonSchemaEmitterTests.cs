@@ -127,9 +127,13 @@ namespace Zuh.Compiler.Tests.Emission {
                   "properties": {
                     "key": {
                       "type": "string",
-                      "enum": [
-                        "a",
-                        "b"
+                      "oneOf": [
+                        {
+                          "const": "a"
+                        },
+                        {
+                          "const": "b"
+                        }
                       ]
                     }
                   },
@@ -161,9 +165,13 @@ namespace Zuh.Compiler.Tests.Emission {
                   "properties": {
                     "key": {
                       "type": "string",
-                      "enum": [
-                        "a",
-                        "b"
+                      "oneOf": [
+                        {
+                          "const": "a"
+                        },
+                        {
+                          "const": "b"
+                        }
                       ]
                     }
                   },
@@ -172,6 +180,95 @@ namespace Zuh.Compiler.Tests.Emission {
                   ]
                 }
                 """;
+        }
+
+        public class SingleLineMappingNodeValueDocumentation : TestSet {
+            protected override MappingNode Root
+                => new MappingNode() {
+                    ["key"] = new MappingNode.Value() {
+                        Documentation = ["hi"],
+                        Node = new ScalarNode()
+                    }
+                };
+
+            protected override string SchemaResult
+                // language=json
+                => """
+                   {
+                     "type": "object",
+                     "properties": {
+                       "key": {
+                         "description": "hi",
+                         "type": "string"
+                       }
+                     },
+                     "required": [
+                       "key"
+                     ]
+                   }
+                   """;
+        }
+
+        public class MultiLineMappingNodeValueDocumentation : TestSet {
+            protected override MappingNode Root
+                => new MappingNode() {
+                    ["key"] = new MappingNode.Value() {
+                        Documentation = ["hi", "bye"],
+                        Node = new ScalarNode()
+                    }
+                };
+            
+            protected override string SchemaResult
+                // language=json
+                => """
+                   {
+                     "type": "object",
+                     "properties": {
+                       "key": {
+                         "description": "hi\\nbye",
+                         "type": "string"
+                       }
+                     },
+                     "required": [
+                       "key"
+                     ]
+                   }
+                   """;
+        }
+        
+        public class SingleLineSumNodeValueDocumentation : TestSet {
+            protected override MappingNode Root
+                => new MappingNode() {
+                    ["key"] = new MappingNode.Value() {
+                        Node = new SumNode() {
+                            ["buh"] = new SumNode.Value() {
+                                Documentation = ["hi"]
+                            }
+                        }
+                    }
+                };
+            
+            protected override string SchemaResult
+                // language=json
+                => """
+                   {
+                     "type": "object",
+                     "properties": {
+                       "key": {
+                         "type": "string",
+                         "oneOf": [
+                           {
+                             "description": "hi",
+                             "const": "buh"
+                           }
+                         ]
+                       }
+                     },
+                     "required": [
+                       "key"
+                     ]
+                   }
+                   """;
         }
     }
 }

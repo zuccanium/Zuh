@@ -9,13 +9,14 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, ImportStatement> ImportStatement = null!;
 
         internal static Parser<char, TStatement> CreateStatement<TStatement>(
-            Parser<char, TStatement> parser
-        ) where TStatement : Statement
-            => WithLocation(
-                WithTrivia(
-                    parser
-                        .Before(Token(";"))
-                )
+            Parser<char, TStatement> statementParser)
+            where TStatement : Statement
+            => (
+                from parser in statementParser
+                from semicolon in Token(";")
+                select parser with {
+                    SourceSpan = parser.SourceSpan - semicolon.SourceSpan,
+                }
             );
         
         private static void initializeStatements() {
@@ -23,11 +24,12 @@ namespace Zuh.Compiler.Parsing {
 
             ImportStatement
                 = CreateStatement(
-                    Token("import")
-                        .Then(StringLiteral)
-                        .Select(stringLiteral => new ImportStatement() {
-                            Module = stringLiteral
-                        })
+                    from import in Token("import")
+                    from stringLiteral in StringLiteral
+                    select new ImportStatement() {
+                        Module = stringLiteral,
+                        SourceSpan = import.SourceSpan - stringLiteral.SourceSpan
+                    }
                 );
 
             Statement

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Schema;
+using Zuh.Compiler.Ast;
 using Zuh.Compiler.Generation.Nodes;
 
 namespace Zuh.Compiler.Emission {
@@ -15,6 +16,11 @@ namespace Zuh.Compiler.Emission {
                 _ => throw new InvalidOperationException($"unexpected {nameof(INode)} inheritor!!!")
             };
 
+        private string? joinDocumentation(string[]? documentation)
+            => documentation is { } realDocumentation
+                ? string.Join("\\n", realDocumentation)
+                : null;
+
         private JSchema mappingNodeToSchema(MappingNode node) {
             var schema = new JSchema() {
                 Type = JSchemaType.Object
@@ -22,6 +28,7 @@ namespace Zuh.Compiler.Emission {
             
             foreach(var (key, value) in node) {
                 schema.Properties[key] = nodeToSchema(value.Node);
+                schema.Properties[key].Description = joinDocumentation(value.Documentation);
 
                 if(!value.IsOptional)
                     schema.Required.Add(key);
@@ -48,7 +55,10 @@ namespace Zuh.Compiler.Emission {
             
             // please give me a setter 😭
             foreach(var (key, value) in node)
-                schema.Enum.Add(key);
+                schema.OneOf.Add(new JSchema() {
+                    Const = key,
+                    Description = joinDocumentation(value.Documentation)
+                });
 
             return schema;
         }

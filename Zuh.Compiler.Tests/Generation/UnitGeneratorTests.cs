@@ -644,6 +644,93 @@ namespace Zuh.Compiler.Tests.Generation {
                         },
                     };
             }
+            
+            public class SingleScalarWithSingleDocumentation : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new StaticKey() {
+                                    Name = new Label() {
+                                        Value = "key"
+                                    }
+                                },
+                                DocumentationLines = [
+                                    new DocumentationLine() {
+                                        Value = "hi"
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["key"] = new MappingNode.Value() {
+                            Node = new ScalarNode(),
+                            Documentation = ["hi"]
+                        }
+                    };
+            }
+            
+            public class SingleScalarWithSingleDocumentationAndLeftSpace : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new StaticKey() {
+                                    Name = new Label() {
+                                        Value = "key"
+                                    }
+                                },
+                                DocumentationLines = [
+                                    new DocumentationLine() {
+                                        Value = " hi"
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["key"] = new MappingNode.Value() {
+                            Node = new ScalarNode(),
+                            Documentation = ["hi"]
+                        }
+                    };
+            }
+            
+            public class SingleScalarWithMultipleDocumentation : TestSet {
+                protected override Schema Schema
+                    => new Schema() {
+                        Entries = [
+                            new SchemaEntry() {
+                                Key = new StaticKey() {
+                                    Name = new Label() {
+                                        Value = "key"
+                                    }
+                                },
+                                DocumentationLines = [
+                                    new DocumentationLine() {
+                                        Value = "hi"
+                                    },
+                                    new DocumentationLine() {
+                                        Value = "bye"
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                protected override INode SchemaNode
+                    => new MappingNode() {
+                        ["key"] = new MappingNode.Value() {
+                            Node = new ScalarNode(),
+                            Documentation = ["hi", "bye"]
+                        }
+                    };
+            }
         }
 
         [Fact]

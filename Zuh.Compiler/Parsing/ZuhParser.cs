@@ -6,73 +6,84 @@ using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {
     public static partial class ZuhParser {
-        internal static readonly Parser<char, string> SingleLineComment;
-        internal static readonly Parser<char, string> MultiLineComment;
-        internal static readonly Parser<char, IEnumerable<string>> Trivia;
-        internal static readonly Parser<char, Unit> EntrySeparator;
-        internal static readonly Parser<char, ZuhFile> ZuhFile;
+        internal record struct TokenAndSource<T>(T Token, SourceSpan SourceSpan);
         
-        internal static Parser<char, T> Token<T>(Parser<char, T> token)
-            => Try(token)
-                .Before(SkipWhitespaces);
+        internal static readonly Parser<char, Unit> CommentLine;
+        internal static readonly Parser<char, Unit> EntrySeparator;
+        internal static readonly Parser<char, Unit> SkipGarbage;
+        internal static readonly Parser<char, DocumentationLine> DocumentationLine;
+        internal static readonly Parser<char, ZuhFile> ZuhFile;
 
-        internal static Parser<char, string> Token(string token)
+        internal static Parser<char, TokenAndSource<T>> WithSource<T>(Parser<char, T> parser)
+            => (
+                from start in CurrentOffset
+                from token in parser
+                from end in CurrentOffset
+                select new TokenAndSource<T>() {
+                    Token = token,
+                    SourceSpan = new SourceSpan() {
+                        Start = start,
+                        End = end
+                    }
+                }
+            );
+        
+        internal static Parser<char, TokenAndSource<T>> Token<T>(Parser<char, T> parser)
+            => SkipGarbage
+                .Then(WithSource(parser));
+
+        internal static Parser<char, TokenAndSource<string>> Token(string token)
             => Token(String(token));
 
-        internal static Parser<char, string> Keyword(string keyword)
+        internal static Parser<char, TokenAndSource<string>> Keyword(string keyword)
             => Token(String(keyword).Before(Not(LetterOrDigit)));
-
-        internal static Parser<char, T> LowerEnum<T>() where T : struct, Enum
-            => OneOf(
-                System.Enum.GetNames<T>()
-                    .Select(name => Try(String(name.ToLowerInvariant())))
-            )
-                .Select(value => System.Enum.Parse<T>(value, true));
-
-        internal static Parser<char, T> WithLocation<T>(Parser<char, T> parser) where T : ZuhNode
-            => Map(
-                (start, node, end)
-                    => node with {
-                        SourceSpan = new SourceSpan() {
-                            Start = start,
-                            End = end
-                        }
-                    },
-                CurrentOffset,
-                parser,
-                CurrentOffset
+        
+        internal static Parser<char, TokenAndSource<T>> LowerEnum<T>() where T : struct, Enum
+            => Token(
+                from value in OneOf(
+                    System.Enum.GetNames<T>()
+                        .Select(name => Try(String(name.ToLowerInvariant())))
+                )
+                select System.Enum.Parse<T>(value, true)
             );
-
-        internal static Parser<char, T> WithTrivia<T>(Parser<char, T> parser) where T : ZuhNode, ITriviaHolder
-            => Map(
-                (trivia, triviaHolder) => triviaHolder with {
-                    TriviaLines = [..trivia.Value]
-                },
-                Trivia.Optional(),
-                parser
+        
+        internal static Parser<char, T> WithDocumentation<T>(Parser<char, T> belowParser) where T : ZuhNode, IDocumentationHolder
+            => (
+                from documentation in Try(DocumentationLine).Many()
+                from below in belowParser
+                select below with {
+                    DocumentationLines = [..documentation],
+                    SourceSpan = documentation.FirstOrDefault() is { } first
+                        ? first.SourceSpan - below.SourceSpan
+                        : below.SourceSpan
+                }
             );
 
         static ZuhParser() {
-            SingleLineComment
-                = Try(String("//"))
-                    .Then(AnyCharExcept('\n', '\r').ManyString());
-            
-            MultiLineComment
-                = Try(String("/*"))
-                    .Then(
-                        Any
-                            .Until(Try(String("*/")))
-                            .Select(chars => new string(chars.ToArray()))
-                    );
-            
-            Trivia
+            CommentLine
+                = (
+                    from start in SkipWhitespaces.Then(String("//"))
+                    from firstCharacter in AnyCharExcept("/")
+                    from body in AnyCharExcept('\n', '\r').ManyString()
+                    select Unit.Value
+                );
+
+            SkipGarbage
                 = OneOf(
-                    SingleLineComment.Select(str => str.Trim()),
-                    MultiLineComment.Select(str => str.Trim()),
-                    Whitespace.AtLeastOnce().ThenReturn("")
+                    Try(Whitespace).ThenReturn(Unit.Value),
+                    Try(CommentLine)
                 )
-                    .Many()
-                    .Select(results => results.Where(str => !string.IsNullOrWhiteSpace(str)));
+                    .SkipMany();
+
+            DocumentationLine
+                = (
+                    from start in SkipGarbage.Then(WithSource(String("///")))
+                    from body in WithSource(AnyCharExcept('\n', '\r').ManyString())
+                    select new DocumentationLine() {
+                        Value = body.Token,
+                        SourceSpan = start.SourceSpan - body.SourceSpan
+                    }
+                );
 
             EntrySeparator
                 = Token(",")
@@ -82,17 +93,19 @@ namespace Zuh.Compiler.Parsing {
             initializeDefinitions();
             initializeExpressions();
             initializeStatements();
-            
+
             ZuhFile
-                = WithLocation(
-                    SkipWhitespaces
-                        .Then(
-                            Statement
-                                .Many()
-                                .Select(statements => new ZuhFile() {
-                                    RootStatements = [..statements]
-                                })
-                        )
+                = (
+                    from statements in Statement.Many()
+                    select new ZuhFile() {
+                        RootStatements = [..statements],
+                        SourceSpan = statements.Any()
+                            ? statements.First().SourceSpan - statements.Last().SourceSpan
+                            : new SourceSpan() {
+                                Start = 0,
+                                End = 0
+                            }
+                    }
                 );
         }
 

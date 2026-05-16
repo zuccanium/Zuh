@@ -8,26 +8,25 @@ namespace Zuh.Compiler.Parsing {
         internal static Parser<char, Identifier> Identifier = null!;
         internal static Parser<char, Label> Label = null!;
 
-        private static Parser<char, T> createIdentifierLike<T>(Func<string, T> selector)
-            where T : ZuhNode
-            => WithLocation(
-                Token(Map(
-                        (firstLetter, remainingCharacters) => firstLetter + remainingCharacters,
-                        Letter,
-                        LetterOrDigit.ManyString()
-                    ))
-                    .Select(selector)
-            );
+        private static Parser<char, T> createIdentifierLike<T>(Func<string, SourceSpan, T> selector)
+            => Token(
+                from firstLetter in Letter.Or(Char('_'))
+                from remainingLetters in LetterOrDigit.Or(Char('_')).ManyString()
+                select (firstLetter + remainingLetters)
+            )
+                .Select(tokenAndSource => selector(tokenAndSource.Token, tokenAndSource.SourceSpan));
 
         private static void initializeAtoms() {
             Identifier
-                = createIdentifierLike(name => new Identifier() {
-                    Value = name
+                = createIdentifierLike((value, sourceSpan) => new Identifier() {
+                    Value = value,
+                    SourceSpan = sourceSpan,
                 });
             
             Label
-                = createIdentifierLike(name => new Label() {
-                    Value = name
+                = createIdentifierLike((value, sourceSpan) => new Label() {
+                    Value = value,
+                    SourceSpan = sourceSpan,
                 });
 
             initializeAtomsLiterals();

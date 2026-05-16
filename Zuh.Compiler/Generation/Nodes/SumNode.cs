@@ -8,6 +8,7 @@
         /// </summary>
         public class Value {
             public bool IsOptional { get; set; } = false;
+            public string[]? Documentation { get; set; }
         }
         
         public SumNode() { }

@@ -14,11 +14,13 @@ namespace Zuh.Compiler.Generation {
                     ? expressionToNode(expressionValue)
                     : new ScalarNode();
 
-                foreach(var (key, value) in sum)
+                foreach(var (key, value) in sum) {
                     node[key] = new MappingNode.Value() {
                         IsOptional = value.IsOptional,
-                        Node = valueNode
+                        Node = valueNode,
+                        Documentation = (entry as IDocumentationHolder).FormattedLines
                     };
+                }
             }
 
             return node;
@@ -28,8 +30,10 @@ namespace Zuh.Compiler.Generation {
             var node = new SumNode();
 
             foreach(var entry in sum.Entries)
-                foreach (var (key, value) in keyToSumNode(entry.Key))
+                foreach(var (key, value) in keyToSumNode(entry.Key)) {
                     node[key] = value;
+                    node[key].Documentation = (entry as IDocumentationHolder).FormattedLines;
+                }
 
             return node;
         }

@@ -10,24 +10,23 @@ namespace Zuh.Compiler.Parsing {
 
         private static void initializeDefinitionsSum() {
             SumEntry
-                = WithLocation(
-                    Key.Select(key => new SumEntry() {
-                        Key = key
-                    })
+                = WithDocumentation(
+                    from key in Key
+                    select new SumEntry() {
+                        Key = key,
+                        SourceSpan = key.SourceSpan
+                    }
                 );
             
             Sum
-                = WithLocation(
-                    SumEntry
-                        .Between(SkipWhitespaces)
-                        .Separated(EntrySeparator)
-                        .Between(
-                            Token("["),
-                            Token("]")
-                        )
-                        .Select(entries => new Ast.Sum() {
-                            Entries = [..entries]
-                        })
+                = (
+                    from openBracket in Token("[")
+                    from entries in SumEntry.Separated(Try(EntrySeparator))
+                    from closeBracket in Token("]")
+                    select new Sum() {
+                        Entries = [..entries],
+                        SourceSpan = openBracket.SourceSpan - closeBracket.SourceSpan
+                    }
                 );
         }
     }
