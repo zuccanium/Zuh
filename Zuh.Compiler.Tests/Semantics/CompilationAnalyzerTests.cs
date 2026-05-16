@@ -1,6 +1,9 @@
-﻿using Zuh.Compiler.Ast;
+﻿using System.Net.Mail;
+using Zuh.Compiler.Ast;
+using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
+using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
 
 namespace Zuh.Compiler.Tests.Semantics {
@@ -38,22 +41,22 @@ namespace Zuh.Compiler.Tests.Semantics {
                 ]
             };
 
-            var importHandler = new MockImportHandler() {
+            var importHandler = new MockImportResolver() {
                 Files = {
                     [importedFileName] = importedFile
                 }
             };
 
             var analyzer = new CompilationAnalyzer() {
-                ImportHandler = importHandler,
-                Files = new() {
+                ImportResolver = importHandler,
+                UnitAsts = new() {
                     [mainFileName] = mainFile
                 }
             };
             
             analyzer.Analyze();
             
-            Assert.True(analyzer.Analyzers.TryGetValue(mainFileName, out var mainFileAnalyzer));
+            Assert.True(analyzer.UnitAnalyzers.TryGetValue(mainFileName, out var mainFileAnalyzer));
             Assert.True(mainFileAnalyzer.ScopeTracker.NodeToPersonalScope.TryGetValue(mainFile, out var mainFileScope));
             Assert.True(mainFileScope.Symbols.TryGetValue(nameof(schema), out var schemaSymbol));
 
@@ -64,6 +67,46 @@ namespace Zuh.Compiler.Tests.Semantics {
                     Expression = schema.Expression
                 }
             );
+        }
+        
+        [Fact]
+        public void Analyze_FailedResolution_CreatesDiagnostic() {
+            const string mainFileName = "main.zuh";
+            const string importedFileName = "imported.zuh";
+
+            var importStatement = new ImportStatement() {
+                Module = new StringLiteral() {
+                    Value = importedFileName
+                }
+            };
+            
+            var mainFile = new ZuhFile() {
+                RootStatements = [
+                    importStatement
+                ]
+            };
+
+            var importHandler = new MockImportResolver() {
+                Files = {}
+            };
+
+            var analyzer = new CompilationAnalyzer() {
+                ImportResolver = importHandler,
+                UnitAsts = new() {
+                    [mainFileName] = mainFile
+                }
+            };
+            
+            analyzer.Analyze();
+            
+            Assert.True(analyzer.UnitAnalyzers.TryGetValue(mainFileName, out var mainFileAnalyzer));
+
+            var expectedDiagnostic = new ModuleResolutionError() {
+                ModuleName = importedFileName,
+                Location = importStatement.SourceSpan
+            };
+            
+            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], mainFileAnalyzer.Diagnostics);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Zuh.Compiler.Ast;
+using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
+using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Visitors;
 
@@ -204,6 +206,60 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.Equal(schemaParamSymbol, schemaParamSymbolFromTracker);
             Assert.Equal(keysParamSymbol, keysParamSymbolFromTracker);
+        }
+
+        [Fact]
+        public void Visit_BadIdentifier_CreatesDiagnostic() {
+            var identifier = new Identifier() {
+                Value = "identifier",
+                SourceSpan = new SourceSpan() {
+                    Start = 235, // completely arbitrary numbers
+                    End = 2903
+                }
+            };
+
+            var declaration = new ExpressionDeclaration() {
+                Name = new Label() {
+                    Value = ""
+                },
+                Expression = new IdentifierExpression() {
+                    Identifier = identifier
+                }
+            };
+            
+            var file = new ZuhFile() {
+                RootStatements = [
+                    declaration
+                ]
+            };
+
+            var fileScope = new Scope();
+
+            var scopeTracker = new ScopeTracker() {
+                NodeToPersonalScope = {
+                    [file] = fileScope,
+                },
+                NodeToEnclosingScope = {
+                    [declaration] = fileScope,
+                    [identifier] = fileScope
+                }
+            };
+            
+            var symbolTracker = new SymbolTracker();
+
+            var visitor = new IdentifierResolverVisitor() {
+                SymbolTracker = symbolTracker,
+                ScopeTracker = scopeTracker
+            };
+            
+            visitor.Visit(file);
+
+            var expectedDiagnostic = new SymbolResolutionError() {
+                SymbolName = nameof(identifier),
+                Location = identifier.SourceSpan
+            };
+            
+            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], visitor.Diagnostics);
         }
     }
 }

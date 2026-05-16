@@ -4,6 +4,7 @@ using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Utils;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
@@ -11,6 +12,8 @@ namespace Zuh.Compiler.Semantics.Visitors {
     /// </summary>
     public class SymbolDeclarationVisitor : Visitor {
         public required ScopeTracker ScopeTracker { get; init; }
+        
+        public DiagnosticCollector Diagnostics { get; private init; } = [];
 
         protected override List<Overload> Overloads
             => [
@@ -18,10 +21,14 @@ namespace Zuh.Compiler.Semantics.Visitors {
                     var personalScope = ScopeTracker.NodeToPersonalScope[node];
 
                     foreach(var param in node.Parameters)
-                        personalScope.Declare(new FunctionParameterSymbol() {
-                            Name = param.Name.Value,
-                            FunctionParameter = param
-                        });
+                        handleDeclarationResult(
+                            param,
+                            param.Name.Value,
+                            personalScope.Declare(new FunctionParameterSymbol() {
+                                Name = param.Name.Value,
+                                FunctionParameter = param
+                            })
+                        );
 
                     next();
                 }),
@@ -33,32 +40,41 @@ namespace Zuh.Compiler.Semantics.Visitors {
                     var isExport = node.IsExport;
                     var name = node.Name.Value;
 
-                    enclosingScope.Declare(
-                        node switch {
-                            ExpressionDeclaration expressionDeclarationNode => new ExpressionSymbol() {
-                                Name = name,
-                                Expression = expressionDeclarationNode.Expression,
-                                IsExport = isExport
-                            },
-                            FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
-                                Name = name,
-                                Function = functionDeclarationNode.Function,
-                                Parameters = [
-                                    ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
-                                        .Values
-                                        .Cast<FunctionParameterSymbol>()
-                                ],
-                                IsExport = isExport
-                            },
-                            _ => throw new UnreachableException()
-                        }
+                    handleDeclarationResult(
+                        node,
+                        name,
+                        enclosingScope.Declare(
+                            node switch {
+                                ExpressionDeclaration expressionDeclarationNode => new ExpressionSymbol() {
+                                    Name = name,
+                                    Expression = expressionDeclarationNode.Expression,
+                                    IsExport = isExport
+                                },
+                                FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
+                                    Name = name,
+                                    Function = functionDeclarationNode.Function,
+                                    Parameters = [
+                                        ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
+                                            .Values
+                                            .Cast<FunctionParameterSymbol>()
+                                    ],
+                                    IsExport = isExport
+                                },
+                                _ => throw new UnreachableException()
+                            }
+                        )
                     );
                 })
             ];
 
-        // make it handle duplicate declarations eventually
-        private void handleDeclarationResult(Result<DeclarationError> result) {
+        private void handleDeclarationResult(ZuhNode node, string name, bool result) {
+            if(result)
+                return;
             
+            Diagnostics.Add(new DeclarationError() {
+                DeclarationName = name,
+                Location = node.SourceSpan
+            });
         }
     }
 }

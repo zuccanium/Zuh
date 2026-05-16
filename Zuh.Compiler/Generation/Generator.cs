@@ -16,7 +16,7 @@ namespace Zuh.Compiler.Generation {
             var dictionary = new Dictionary<string, MappingNode>();
             
             foreach(var unitId in unitIds) {
-                if(!Analyzer.Analyzers.TryGetValue(unitId, out var unitAnalyzer))
+                if(!Analyzer.UnitAnalyzers.TryGetValue(unitId, out var unitAnalyzer))
                     throw new InvalidOperationException($"{unitId} doesnt have an analyzer!");
 
                 var unitGenerator = new UnitGenerator() {

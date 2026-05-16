@@ -1,6 +1,8 @@
-﻿using Zuh.Compiler.Ast;
+﻿using System.Diagnostics;
+using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Analyzers;
+using Zuh.Compiler.Semantics.Diagnostics;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
@@ -16,14 +18,18 @@ namespace Zuh.Compiler.Semantics.Visitors {
             => [
                 new Overload<Identifier>((node, next) => {
                     if(!ScopeTracker.NodeToEnclosingScope.TryGetValue(node, out var nodeScope))
-                        throw new Exception("qha??");
-            
+                        throw new Exception("failed to get identifier source span?");
+
                     var resolveResult = nodeScope.Resolve(node.Value);
 
-                    if(resolveResult.Diagnostic is { } diagnostic)
-                        Diagnostics.Add(diagnostic);
-
-                    SymbolTracker.Symbols[node] = resolveResult.Value!;
+                    if(resolveResult is { } resolvedSymbol)
+                        SymbolTracker.Symbols[node] = resolvedSymbol;
+                    
+                    else
+                        Diagnostics.Add(new SymbolResolutionError() {
+                            SymbolName = node.Value,
+                            Location = node.SourceSpan
+                        });
 
                     next();
                 })

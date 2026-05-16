@@ -1,56 +1,75 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
+using Zuh.Compiler.Parsing;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Utils;
 
 namespace Zuh.Compiler.Semantics.Analyzers {
     /// <summary>
     /// analyzes a multiple units of compilation (<see cref="ZuhFile"/>) for semantic data.
     /// </summary>
-    public class CompilationAnalyzer : Analyzer {
-        public required IImportHandler ImportHandler { get; init; }
-        public required Dictionary<string, ZuhFile> Files { get; init; }
-
-        public Dictionary<string, UnitAnalyzer> Analyzers { get; private init; } = [];
+    public class CompilationAnalyzer {
+        /// <summary>
+        /// the thing used to handle imports.
+        /// </summary>
+        public required IImportResolver ImportResolver { get; init; }
         
-        public override void Analyze() {
-            foreach(var (fileName, file) in Files) {
+        /// <summary>
+        /// map of unit id -> file ast.
+        /// this is where you input files to be analyzed.
+        /// </summary>
+        public required Dictionary<string, ZuhFile> UnitAsts { get; init; }
+
+        /// <summary>
+        /// map of unit id -> unit analyzer.
+        /// </summary>
+        public Dictionary<string, UnitAnalyzer> UnitAnalyzers { get; private init; } = [];
+
+        /// <summary>
+        /// aggregation of the diagnostics of each unit.
+        /// </summary>
+        public DiagnosticCollector Diagnostics
+            => DiagnosticCollector.Merge(from analyzer in UnitAnalyzers select Diagnostics);
+        
+        /// <summary>
+        /// analyzes the files provided in <see cref="UnitAsts"/>.
+        /// </summary>
+        public void Analyze() {
+            foreach(var (unitId, unit) in UnitAsts) {
                 var unitAnalyzer = new UnitAnalyzer() {
-                    File = file,
-                    UnitId = fileName,
+                    UnitAst = unit,
+                    UnitId = unitId,
                     CompilationAnalyzer = this
                 };
                 
-                Analyzers[fileName] = unitAnalyzer;
+                UnitAnalyzers[unitId] = unitAnalyzer;
                 
                 unitAnalyzer.Analyze();
             }
         }
+        
+        /// <summary>
+        /// allows for <see cref="UnitAnalyzer"/>s to interact with each other through imports.
+        /// </summary>
+        /// <param name="importResolution">an import resolution <b>that is expected to be a success</b>.</param>
+        /// <returns>the unit analyzer associated with the provided resolution.</returns>
+        public UnitAnalyzer ImportUnitAnalyzer(IImportResolution importResolution) {
+            if(UnitAnalyzers.TryGetValue(importResolution.Id!, out var cachedAnalyzer))
+                return cachedAnalyzer;
 
-        public Result<UnitAnalyzer, ResolutionError> ImportUnitAnalyzer(string sourceId, string module) {
-            var importResolution = ImportHandler.ResolveModule(sourceId, module);
-
-            if(importResolution is { Success: false })
-                return new Result<UnitAnalyzer, ResolutionError> {
-                    Diagnostic = new ResolutionError() {
-                        Name = module
-                    }
-                };
-
-            var importedFile = ImportHandler.FetchContent(importResolution);
-
+            var file = importResolution.FetchFile(out var diagnostics);
+            
             var analyzer = new UnitAnalyzer() {
                 CompilationAnalyzer = this,
-                File = importedFile,
+                UnitAst = file,
                 UnitId = importResolution.Id!
             };
             
-            Analyzers[importResolution.Id!] = analyzer;
+            UnitAnalyzers[importResolution.Id!] = analyzer;
             
             analyzer.Analyze();
 
-            return new Result<UnitAnalyzer, ResolutionError>() {
-                Value = analyzer
-            };
+            return analyzer;
         }
     }
 }

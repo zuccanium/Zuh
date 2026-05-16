@@ -1,4 +1,6 @@
-﻿namespace Zuh.Compiler.Diagnostics {
+﻿using Zuh.Compiler.Ast;
+
+namespace Zuh.Compiler.Diagnostics {
     /// <summary>
     /// represents any issue (warning, error, maybe more later idk) during the compilation process.
     /// </summary>
@@ -8,6 +10,9 @@
             Error
         };
         
+        public abstract string Message { get;  }
+        
+        public SourceSpan? Location { get; init; }
         public abstract DiagnosticSeverity Severity { get; }
     }
 }

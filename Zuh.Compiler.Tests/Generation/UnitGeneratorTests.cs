@@ -45,7 +45,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
                     var analyzer = new UnitAnalyzer() {
                         CompilationAnalyzer = null!,
-                        File = file,
+                        UnitAst = file,
                         UnitId = "main.zuh",
                         ScopeTracker = scopeTracker,
                         SymbolTracker = symbolTracker,
@@ -814,7 +814,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var analyzer = new UnitAnalyzer() {
                 CompilationAnalyzer = null!,
-                File = file,
+                UnitAst = file,
                 UnitId = "main.zuh",
                 ScopeTracker = scopeTracker,
                 SymbolTracker = symbolTracker,
@@ -973,7 +973,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var analyzer = new UnitAnalyzer() {
                 CompilationAnalyzer = null!,
-                File = file,
+                UnitAst = file,
                 UnitId = "main.zuh",
                 ScopeTracker = scopeTracker,
                 SymbolTracker = symbolTracker,
