@@ -2,6 +2,8 @@
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Compilation;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Semantics.Analyzers {
@@ -9,14 +11,6 @@ namespace Zuh.Compiler.Semantics.Analyzers {
     /// analyzes a single unit of compilation (a <see cref="ZuhFile"/>) for semantic data.
     /// </summary>
     public class UnitAnalyzer {
-        /// <summary>
-        /// parent compilation analyzer.
-        /// </summary>
-        /// <remarks>
-        /// required in order to access cached module imports.
-        /// </remarks>
-        public required CompilationAnalyzer CompilationAnalyzer { get; init; }
-        
         /// <summary>
         /// ast representation of the unit to analyze.
         /// </summary>
@@ -27,48 +21,72 @@ namespace Zuh.Compiler.Semantics.Analyzers {
         /// </summary>
         public required string UnitId { get; init; }
 
-        public ScopeTracker ScopeTracker { get; init; } = new();
-        public SymbolTracker SymbolTracker { get; init; } = new();
+        public UnitScopeTracker UnitScopeTracker { get; init; } = new();
+        public UnitSymbolTracker UnitSymbolTracker { get; init; } = new();
+        public UnitTypeTracker UnitTypeTracker { get; init; } = new();
         
         public DiagnosticCollector Diagnostics { get; private init; } = [];
 
         /// <summary>
-        /// analyzes the single unit.
+        /// everything that can be done in full isolation from other units.
         /// </summary>
-        public void Analyze() {
+        public void CreateScopesAndSymbols() {
             // scope creation
             var scopeCreatorVisitor = new ScopeCreatorVisitor() {
-                ScopeTracker = ScopeTracker
+                UnitScopeTracker = UnitScopeTracker
             };
-            
+
             scopeCreatorVisitor.Visit(UnitAst);
-            
+
             // symbol declaration
             var symbolDeclarationVisitor = new SymbolDeclarationVisitor() {
-                ScopeTracker = ScopeTracker
+                UnitScopeTracker = UnitScopeTracker,
+                UnitSymbolTracker = UnitSymbolTracker,
+                Diagnostics = Diagnostics,
+                UnitId = UnitId
             };
-            
-            symbolDeclarationVisitor.Visit(UnitAst);
 
-            foreach(var statement in UnitAst.RootStatements) {
-                if(statement is not ImportStatement importStatement)
-                    continue;
-                
-                handleImport(importStatement);
-            }
-            
-            // identifier resolution
-            var identifierResolverVisitor = new IdentifierResolverVisitor() {
-                ScopeTracker = ScopeTracker,
-                SymbolTracker = SymbolTracker
-            };
-            
-            identifierResolverVisitor.Visit(UnitAst);
+            symbolDeclarationVisitor.Visit(UnitAst);
         }
 
-        private void handleImport(ImportStatement importStatement) {
+        /// <summary>
+        /// add all imports content to the root scope.
+        /// </summary>
+        /// <param name="compilationAnalyzer">used to actually fetch the imports.</param>
+        public void HandleImports(CompilationAnalyzer compilationAnalyzer) {
+            foreach(var statement in UnitAst.RootStatements) {
+                if (statement is not ImportStatement importStatement)
+                    continue;
+
+                handleImport(importStatement, compilationAnalyzer);
+            }
+        }
+
+        /// <summary>
+        /// figure out what identifiers identify and what symbols depend on.
+        /// </summary>
+        public void AnalyzeSymbolReferences(CompilationSymbolTracker compilationSymbolTracker) {
+            // identifier resolution
+            var identifierResolverVisitor = new IdentifierResolverVisitor() {
+                UnitScopeTracker = UnitScopeTracker,
+                Diagnostics = Diagnostics,
+                UnitSymbolTracker = UnitSymbolTracker
+            };
+
+            identifierResolverVisitor.Visit(UnitAst);
+            
+            // dependency finding
+            var symbolDependencyFinderVisitor = new SymbolDependencyFinderVisitor() {
+                UnitSymbolTracker = UnitSymbolTracker,
+                CompilationSymbolTracker = compilationSymbolTracker
+            };
+            
+            symbolDependencyFinderVisitor.Visit(UnitAst);
+        }
+
+        private void handleImport(ImportStatement importStatement, CompilationAnalyzer compilationAnalyzer) {
             var importedModuleName = importStatement.Module.Value;
-            var resolution = CompilationAnalyzer.ImportResolver.ResolveImport(UnitId, importedModuleName);
+            var resolution = compilationAnalyzer.ImportResolver.ResolveImport(UnitId, importedModuleName);
 
             if(resolution is { Success: false }) {
                 Diagnostics.Add(new ModuleResolutionError() {
@@ -78,16 +96,25 @@ namespace Zuh.Compiler.Semantics.Analyzers {
 
                 return;
             }
-            
-            var importedFileAnalyzer = CompilationAnalyzer.ImportUnitAnalyzer(resolution);
+
+            var importedUnitId = resolution.Id;
+            var importedFileAnalyzer = compilationAnalyzer.ImportUnitAnalyzer(resolution);
 
             // transfer all exported things
-            foreach(var (key, symbol) in importedFileAnalyzer.ScopeTracker.NodeToPersonalScope[importedFileAnalyzer.UnitAst]) {
+            foreach(var (symbolName, symbol) in importedFileAnalyzer.UnitScopeTracker.NodeToPersonalScope[importedFileAnalyzer.UnitAst]) {
                 if(symbol is not ExportableSymbol { IsExport: true } exportableSymbol)
                     continue;
 
-                ScopeTracker.NodeToPersonalScope[UnitAst].Declare(exportableSymbol with {
-                    IsExport = false
+                // exports can only be transferred between units if they come from their original unit
+                if(exportableSymbol.UnitId != importedUnitId)
+                    continue;
+
+                if(UnitScopeTracker.NodeToPersonalScope[UnitAst].Declare(exportableSymbol))
+                    continue;
+                
+                Diagnostics.Add(new DeclarationError() {
+                    Location = importStatement.SourceSpan,
+                    DeclarationName = symbolName
                 });
             }
         }

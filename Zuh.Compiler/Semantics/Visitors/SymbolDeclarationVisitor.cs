@@ -4,6 +4,7 @@ using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Utils;
 
 namespace Zuh.Compiler.Semantics.Visitors {
@@ -11,23 +12,28 @@ namespace Zuh.Compiler.Semantics.Visitors {
     /// looks for declarations and adds them to their enclosing scopes.
     /// </summary>
     public class SymbolDeclarationVisitor : Visitor {
-        public required ScopeTracker ScopeTracker { get; init; }
-        
-        public DiagnosticCollector Diagnostics { get; private init; } = [];
+        public required UnitScopeTracker UnitScopeTracker { get; init; }
+        public required UnitSymbolTracker UnitSymbolTracker { get; init; }
+
+        public required string UnitId { get; init; }
+
+        public required DiagnosticCollector Diagnostics { get; init; }
 
         protected override List<Overload> Overloads
             => [
+                // handles function parameters (not functions)
                 new Overload<Function>((node, next) => {
-                    var personalScope = ScopeTracker.NodeToPersonalScope[node];
+                    var personalScope = UnitScopeTracker.NodeToPersonalScope[node];
 
                     foreach(var param in node.Parameters)
-                        handleDeclarationResult(
+                        declare(
                             param,
-                            param.Name.Value,
-                            personalScope.Declare(new FunctionParameterSymbol() {
+                            personalScope,
+                            new FunctionParameterSymbol() {
                                 Name = param.Name.Value,
+                                UnitId = UnitId,
                                 FunctionParameter = param
-                            })
+                            }
                         );
 
                     next();
@@ -35,46 +41,49 @@ namespace Zuh.Compiler.Semantics.Visitors {
                 new Overload<Declaration>((node, next) => {
                     next();
                     
-                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
+                    var enclosingScope = UnitScopeTracker.NodeToEnclosingScope[node];
 
                     var isExport = node.IsExport;
                     var name = node.Name.Value;
 
-                    handleDeclarationResult(
+                    declare(
                         node,
-                        name,
-                        enclosingScope.Declare(
-                            node switch {
-                                ExpressionDeclaration expressionDeclarationNode => new ExpressionSymbol() {
-                                    Name = name,
-                                    Expression = expressionDeclarationNode.Expression,
-                                    IsExport = isExport
-                                },
-                                FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
-                                    Name = name,
-                                    Function = functionDeclarationNode.Function,
-                                    Parameters = [
-                                        ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
-                                            .Values
-                                            .Cast<FunctionParameterSymbol>()
-                                    ],
-                                    IsExport = isExport
-                                },
-                                _ => throw new UnreachableException()
-                            }
-                        )
+                        enclosingScope,
+                        node switch {
+                            ExpressionDeclaration expressionDeclarationNode => new ExpressionDeclarationSymbol() {
+                                Name = name,
+                                UnitId = UnitId,
+                                ExpressionDeclaration = expressionDeclarationNode,
+                                IsExport = isExport
+                            },
+                            FunctionDeclaration functionDeclarationNode => new FunctionDeclarationSymbol() {
+                                Name = name,
+                                UnitId = UnitId,
+                                FunctionDeclaration = functionDeclarationNode,
+                                Parameters = [
+                                    ..UnitScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
+                                        .Values
+                                        .Cast<FunctionParameterSymbol>()
+                                ],
+                                IsExport = isExport
+                            },
+                            _ => throw new UnreachableException()
+                        }
                     );
                 })
             ];
 
-        private void handleDeclarationResult(ZuhNode node, string name, bool result) {
-            if(result)
+        private void declare(ZuhNode node, Scope scope, Symbol symbol) {
+            if(!scope.Declare(symbol)) {
+                Diagnostics.Add(new DeclarationError() {
+                    DeclarationName = symbol.Name,
+                    Location = node.SourceSpan
+                });
+
                 return;
-            
-            Diagnostics.Add(new DeclarationError() {
-                DeclarationName = name,
-                Location = node.SourceSpan
-            });
+            }
+
+            UnitSymbolTracker.NodeToPersonalSymbol[node] = symbol;
         }
     }
 }

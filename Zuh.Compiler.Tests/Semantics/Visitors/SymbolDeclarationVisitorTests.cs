@@ -4,6 +4,7 @@ using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Tests.Semantics.Visitors {
@@ -35,7 +36,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
 
             var fileScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope
                 },
@@ -44,17 +45,23 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
+            var symbolTracker = new UnitSymbolTracker();
+
             var visitor = new SymbolDeclarationVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                UnitId = "",
+                Diagnostics = null!
             };
             
             visitor.Visit(file);
             
             Assert.True(fileScope.Symbols.TryGetValue(nameof(schema), out var schemaSymbol));
             
-            Assert.Equivalent(schemaSymbol, new ExpressionSymbol() {
+            Assert.Equivalent(schemaSymbol, new ExpressionDeclarationSymbol() {
                 Name = nameof(schema),
-                Expression = schema.Expression
+                UnitId = "",
+                ExpressionDeclaration = schema
             });
         }
 
@@ -100,7 +107,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             var fileScope = new Scope();
             var funcScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope,
                     [func.Function] = funcScope
@@ -109,9 +116,14 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                     [func] = fileScope,
                 }
             };
+
+            var symbolTracker = new UnitSymbolTracker();
             
             var visitor = new SymbolDeclarationVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                UnitId = "",
+                Diagnostics = null!
             };
             
             visitor.Visit(file);
@@ -121,11 +133,13 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             Assert.Equivalent(schemaParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
+                UnitId = "",
                 FunctionParameter = schemaParam
             });
             
             Assert.Equivalent(keysParamSymbol, new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
+                UnitId = "",
                 FunctionParameter = keysParam
             });
         }
@@ -158,7 +172,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
 
             var fileScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope
                 },
@@ -168,8 +182,15 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
+            var symbolTracker = new UnitSymbolTracker();
+
+            var diagnostics = new DiagnosticCollector();
+            
             var visitor = new SymbolDeclarationVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                UnitId = "",
+                Diagnostics = diagnostics
             };
             
             visitor.Visit(file);
@@ -179,7 +200,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 Location = secondDeclaration.SourceSpan
             };
             
-            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], visitor.Diagnostics);
+            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], diagnostics);
         }
         
         [Fact]
@@ -223,7 +244,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             var fileScope = new Scope();
             var funcScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope,
                     [func.Function] = funcScope
@@ -233,8 +254,15 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
+            var symbolTracker = new UnitSymbolTracker();
+
+            var diagnostics = new DiagnosticCollector();
+            
             var visitor = new SymbolDeclarationVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                UnitId = "",
+                Diagnostics = diagnostics
             };
             
             visitor.Visit(file);
@@ -244,7 +272,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 Location = secondParameter.SourceSpan
             };
             
-            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], visitor.Diagnostics);
+            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], diagnostics);
         }
     }
 }

@@ -3,27 +3,28 @@ using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Diagnostics;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
-    /// looks for identifiers and adds them to a <see cref="SymbolTracker"/>.
+    /// looks for identifiers and adds them to a <see cref="UnitSymbolTracker"/>.
     /// </summary>
     public class IdentifierResolverVisitor : Visitor {
-        public required ScopeTracker ScopeTracker { get; init; }
-        public required SymbolTracker SymbolTracker { get; init; }
+        public required UnitScopeTracker UnitScopeTracker { get; init; }
+        public required UnitSymbolTracker UnitSymbolTracker { get; init; }
         
-        public DiagnosticCollector Diagnostics { get; private init; } = [];
+        public required DiagnosticCollector Diagnostics { get; init; }
 
         protected override List<Overload> Overloads
             => [
                 new Overload<Identifier>((node, next) => {
-                    if(!ScopeTracker.NodeToEnclosingScope.TryGetValue(node, out var nodeScope))
+                    if(!UnitScopeTracker.NodeToEnclosingScope.TryGetValue(node, out var nodeScope))
                         throw new Exception("failed to get identifier source span?");
 
                     var resolveResult = nodeScope.Resolve(node.Value);
 
                     if(resolveResult is { } resolvedSymbol)
-                        SymbolTracker.Symbols[node] = resolvedSymbol;
+                        UnitSymbolTracker.IdentifierToSymbol[node] = resolvedSymbol;
                     
                     else
                         Diagnostics.Add(new SymbolResolutionError() {

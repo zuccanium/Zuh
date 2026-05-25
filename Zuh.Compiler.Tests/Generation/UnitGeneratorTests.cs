@@ -4,6 +4,7 @@ using Zuh.Compiler.Generation.Nodes;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 
 namespace Zuh.Compiler.Tests.Generation {
     public class UnitGeneratorTests {
@@ -32,7 +33,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
                     var fileScope = new Scope();
 
-                    var scopeTracker = new ScopeTracker() {
+                    var scopeTracker = new UnitScopeTracker() {
                         NodeToPersonalScope = {
                             [file] = fileScope
                         },
@@ -41,14 +42,13 @@ namespace Zuh.Compiler.Tests.Generation {
                         }
                     };
 
-                    var symbolTracker = new SymbolTracker();
+                    var symbolTracker = new UnitSymbolTracker();
 
                     var analyzer = new UnitAnalyzer() {
-                        CompilationAnalyzer = null!,
                         UnitAst = file,
                         UnitId = "main.zuh",
-                        ScopeTracker = scopeTracker,
-                        SymbolTracker = symbolTracker,
+                        UnitScopeTracker = scopeTracker,
+                        UnitSymbolTracker = symbolTracker,
                     };
 
                     var generator = new UnitGenerator() {
@@ -793,7 +793,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var fileScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope
                 },
@@ -803,21 +803,21 @@ namespace Zuh.Compiler.Tests.Generation {
                 }
             };
 
-            var symbolTracker = new SymbolTracker() {
-                Symbols = {
-                    [referencedSchemaIdentifierReference] = new ExpressionSymbol() {
+            var symbolTracker = new UnitSymbolTracker() {
+                IdentifierToSymbol = {
+                    [referencedSchemaIdentifierReference] = new ExpressionDeclarationSymbol() {
                         Name = nameof(referencedSchema),
-                        Expression = referencedSchema.Expression
+                        ExpressionDeclaration = referencedSchema,
+                        UnitId = ""
                     }
                 }
             };
 
             var analyzer = new UnitAnalyzer() {
-                CompilationAnalyzer = null!,
                 UnitAst = file,
                 UnitId = "main.zuh",
-                ScopeTracker = scopeTracker,
-                SymbolTracker = symbolTracker,
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
             };
 
             var generator = new UnitGenerator() {
@@ -936,12 +936,14 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var schemaParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
-                FunctionParameter = schemaParam
+                FunctionParameter = schemaParam,
+                UnitId = ""
             };
             
-            var functionSymbol = new FunctionSymbol() {
+            var functionSymbol = new FunctionDeclarationSymbol() {
                 Name = nameof(func),
-                Function = func.Function,
+                UnitId = "",
+                FunctionDeclaration = func,
                 Parameters = [
                     schemaParamSymbol
                 ]
@@ -951,7 +953,7 @@ namespace Zuh.Compiler.Tests.Generation {
 
             var funcScope = new Scope();
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope,
                     [func.Function] = funcScope
@@ -964,19 +966,18 @@ namespace Zuh.Compiler.Tests.Generation {
                 }
             };
 
-            var symbolTracker = new SymbolTracker() {
-                Symbols = {
+            var symbolTracker = new UnitSymbolTracker() {
+                IdentifierToSymbol = {
                     [functionIdentifierReference] = functionSymbol,
                     [schemaParamIdentifierReference] = schemaParamSymbol
                 }
             };
 
             var analyzer = new UnitAnalyzer() {
-                CompilationAnalyzer = null!,
                 UnitAst = file,
                 UnitId = "main.zuh",
-                ScopeTracker = scopeTracker,
-                SymbolTracker = symbolTracker,
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
             };
 
             var generator = new UnitGenerator() {

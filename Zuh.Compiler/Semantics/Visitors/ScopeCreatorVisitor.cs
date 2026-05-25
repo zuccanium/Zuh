@@ -1,4 +1,5 @@
 ﻿using Zuh.Compiler.Ast;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
@@ -7,13 +8,13 @@ namespace Zuh.Compiler.Semantics.Visitors {
     ///     <item>
     ///         <description>
     ///             creates scopes on nodes marked as <see cref="IHasScope"/>
-    ///             and adds them to <see cref="ScopeTracker.NodeToPersonalScope"/>.
+    ///             and adds them to <see cref="UnitScopeTracker.NodeToPersonalScope"/>.
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
     ///             maps nodes marked as <see cref="IExistsInScope"/> to their enclosing scope
-    ///             and adds them to <see cref="ScopeTracker.NodeToEnclosingScope"/>
+    ///             and adds them to <see cref="UnitScopeTracker.NodeToEnclosingScope"/>
     ///         </description>
     ///     </item>
     /// </list>
@@ -21,7 +22,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
     public class ScopeCreatorVisitor : Visitor {
         private readonly Stack<Scope> scopeStack = [];
         
-        public required ScopeTracker ScopeTracker { get; init; }
+        public required UnitScopeTracker UnitScopeTracker { get; init; }
 
         private Scope? topScope
             => scopeStack.TryPeek(out var top)
@@ -38,7 +39,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
                     popStack();
                 }),
                 new Overload<IExistsInScope>((node, next) => {
-                    ScopeTracker.NodeToEnclosingScope[node] = topScope!;
+                    UnitScopeTracker.NodeToEnclosingScope[node] = topScope!;
 
                     next();
                 })
@@ -51,7 +52,7 @@ namespace Zuh.Compiler.Semantics.Visitors {
             
             scopeStack.Push(newTopScope);
             
-            ScopeTracker.NodeToPersonalScope[scopeNode] = newTopScope;
+            UnitScopeTracker.NodeToPersonalScope[scopeNode] = newTopScope;
         }
 
         private void popStack() {
