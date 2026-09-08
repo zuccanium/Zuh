@@ -1,6 +1,5 @@
 ﻿using Zuh.Compiler.Ast;
-using Zuh.Compiler.Semantics;
-using Zuh.Compiler.Semantics.Analyzers;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Tests.Semantics.Visitors {
@@ -14,10 +13,10 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 RootStatements = []
             };
             
-            var scopeTracker = new ScopeTracker();
+            var scopeTracker = new UnitScopeTracker();
 
             var visitor = new ScopeCreatorVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker
             };
             
             visitor.Visit(file);
@@ -47,10 +46,10 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
 
-            var scopeTracker = new ScopeTracker();
+            var scopeTracker = new UnitScopeTracker();
 
             var visitor = new ScopeCreatorVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker
             };
             
             visitor.Visit(file);
@@ -90,10 +89,10 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
             
-            var scopeTracker = new ScopeTracker();
+            var scopeTracker = new UnitScopeTracker();
 
             var visitor = new ScopeCreatorVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker
             };
             
             visitor.Visit(file);
@@ -141,10 +140,10 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
             
-            var scopeTracker = new ScopeTracker();
+            var scopeTracker = new UnitScopeTracker();
 
             var visitor = new ScopeCreatorVisitor() {
-                ScopeTracker = scopeTracker
+                UnitScopeTracker = scopeTracker
             };
             
             visitor.Visit(file);

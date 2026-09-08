@@ -45,12 +45,12 @@ namespace Zuh.Compiler.Generation {
             };
         
         private INode functionInvocationExpressionToNode(FunctionInvocationExpression expression) {
-            var symbol = Analyzer.SymbolTracker.Symbols[expression.FunctionIdentifier];
+            var symbol = Analyzer.UnitSymbolTracker.IdentifierToSymbol[expression.FunctionIdentifier];
 
-            if(symbol is not FunctionSymbol functionSymbol)
+            if(symbol is not FunctionDeclarationSymbol functionSymbol)
                 throw new InvalidOperationException("expected a function symbol");
 
-            var function = functionSymbol.Function;
+            var function = functionSymbol.FunctionDeclaration.Function;
             
             if(expression.Arguments.Length != function.Parameters.Length)
                 throw new InvalidOperationException("parameter length mismatch");

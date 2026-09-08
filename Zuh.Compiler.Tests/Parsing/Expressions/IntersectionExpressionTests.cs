@@ -1,9 +1,6 @@
 ﻿using Pidgin;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Parsing;
-using Zuh.Compiler.Tests.Infrastructure;
-using static Zuh.Compiler.Tests.Infrastructure.SpanMarker;
-using static Zuh.Compiler.Tests.Infrastructure.SyntaxFactory;
 
 namespace Zuh.Compiler.Tests.Parsing.Expressions {
     public class IntersectionExpressionTests {

@@ -1,50 +1,65 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
     /// looks for declarations and adds them to their enclosing scopes.
     /// </summary>
     public class SymbolDeclarationVisitor : Visitor {
-        public required ScopeTracker ScopeTracker { get; init; }
+        public required UnitScopeTracker UnitScopeTracker { get; init; }
+        public required UnitSymbolTracker UnitSymbolTracker { get; init; }
+
+        public required string UnitId { get; init; }
+
+        public required DiagnosticCollector Diagnostics { get; init; }
 
         protected override List<Overload> Overloads
             => [
+                // handles function parameters (not functions)
                 new Overload<Function>((node, next) => {
-                    var personalScope = ScopeTracker.NodeToPersonalScope[node];
+                    var personalScope = UnitScopeTracker.NodeToPersonalScope[node];
 
                     foreach(var param in node.Parameters)
-                        personalScope.Declare(new FunctionParameterSymbol() {
-                            Name = param.Name.Value,
-                            FunctionParameter = param
-                        });
+                        declare(
+                            param,
+                            personalScope,
+                            new FunctionParameterSymbol() {
+                                Name = param.Name.Value,
+                                UnitId = UnitId,
+                                FunctionParameter = param
+                            }
+                        );
 
                     next();
                 }),
                 new Overload<Declaration>((node, next) => {
                     next();
                     
-                    var enclosingScope = ScopeTracker.NodeToEnclosingScope[node];
+                    var enclosingScope = UnitScopeTracker.NodeToEnclosingScope[node];
 
                     var isExport = node.IsExport;
                     var name = node.Name.Value;
 
-                    enclosingScope.Declare(
+                    declare(
+                        node,
+                        enclosingScope,
                         node switch {
-                            ExpressionDeclaration expressionDeclarationNode => new ExpressionSymbol() {
+                            ExpressionDeclaration expressionDeclarationNode => new ExpressionDeclarationSymbol() {
                                 Name = name,
-                                Expression = expressionDeclarationNode.Expression,
+                                UnitId = UnitId,
+                                ExpressionDeclaration = expressionDeclarationNode,
                                 IsExport = isExport
                             },
-                            FunctionDeclaration functionDeclarationNode => new FunctionSymbol() {
+                            FunctionDeclaration functionDeclarationNode => new FunctionDeclarationSymbol() {
                                 Name = name,
-                                Function = functionDeclarationNode.Function,
+                                UnitId = UnitId,
+                                FunctionDeclaration = functionDeclarationNode,
                                 Parameters = [
-                                    ..ScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
+                                    ..UnitScopeTracker.NodeToPersonalScope[functionDeclarationNode.Function].Symbols
                                         .Values
                                         .Cast<FunctionParameterSymbol>()
                                 ],
@@ -56,9 +71,17 @@ namespace Zuh.Compiler.Semantics.Visitors {
                 })
             ];
 
-        // make it handle duplicate declarations eventually
-        private void handleDeclarationResult(Result<DeclarationError> result) {
-            
+        private void declare(ZuhNode node, Scope scope, Symbol symbol) {
+            if(!scope.Declare(symbol)) {
+                Diagnostics.Add(new DeclarationError() {
+                    DeclarationName = symbol.Name,
+                    Location = node.SourceSpan
+                });
+
+                return;
+            }
+
+            UnitSymbolTracker.NodeToPersonalSymbol[node] = symbol;
         }
     }
 }

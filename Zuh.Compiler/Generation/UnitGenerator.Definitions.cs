@@ -57,15 +57,15 @@ namespace Zuh.Compiler.Generation {
         }
         
         private INode identifierToNode(Identifier identifier) {
-            if(!Analyzer.SymbolTracker.Symbols.TryGetValue(identifier, out var symbol))
+            if(!Analyzer.UnitSymbolTracker.IdentifierToSymbol.TryGetValue(identifier, out var symbol))
                 throw new InvalidOperationException();
 
             return symbol switch {
                 FunctionParameterSymbol functionParameterSymbol
                     => topStackFrame![functionParameterSymbol],
                 
-                ExpressionSymbol schemaSymbol
-                    => expressionToNode(schemaSymbol.Expression),
+                ExpressionDeclarationSymbol schemaSymbol
+                    => expressionToNode(schemaSymbol.ExpressionDeclaration.Expression),
                 
                 _ => throw new InvalidOperationException("unknown symbol type")
             };

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Tests.Infrastructure.Extensions;

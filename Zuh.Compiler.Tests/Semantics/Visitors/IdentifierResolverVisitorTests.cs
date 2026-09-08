@@ -1,6 +1,9 @@
 ﻿using Zuh.Compiler.Ast;
+using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
+using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
+using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Visitors;
 
 namespace Zuh.Compiler.Tests.Semantics.Visitors {
@@ -51,22 +54,24 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 ]
             };
 
-            var referencedSchemaSymbol = new ExpressionSymbol() {
+            var referencedSchemaSymbol = new ExpressionDeclarationSymbol() {
                 Name = nameof(referencedSchema),
-                Expression = referencedSchema.Expression
+                UnitId = "",
+                ExpressionDeclaration = referencedSchema
             };
 
             var fileScope = new Scope() {
                 Symbols = {
                     [nameof(referencedSchema)] = referencedSchemaSymbol,
-                    [nameof(referencingSchema)] = new ExpressionSymbol() {
+                    [nameof(referencingSchema)] = new ExpressionDeclarationSymbol() {
                         Name = nameof(referencingSchema),
-                        Expression = referencingSchema.Expression
+                        UnitId = "",
+                        ExpressionDeclaration = referencingSchema
                     }
                 }
             };
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope
                 },
@@ -77,16 +82,17 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
-            var symbolTracker = new SymbolTracker();
+            var symbolTracker = new UnitSymbolTracker();
 
             var visitor = new IdentifierResolverVisitor() {
-                ScopeTracker = scopeTracker,
-                SymbolTracker = symbolTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                Diagnostics = null!
             };
             
             visitor.Visit(file);
             
-            Assert.True(symbolTracker.Symbols.TryGetValue(referencedSchemaIdentifierReference, out var referencedSchemaSymbolFromTracker));
+            Assert.True(symbolTracker.IdentifierToSymbol.TryGetValue(referencedSchemaIdentifierReference, out var referencedSchemaSymbolFromTracker));
             
             Assert.Equal(referencedSchemaSymbol, referencedSchemaSymbolFromTracker);
         }
@@ -151,17 +157,20 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
             
             var schemaParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(schemaParam),
+                UnitId = "",
                 FunctionParameter = schemaParam
             };
             
             var keysParamSymbol = new FunctionParameterSymbol() {
                 Name = nameof(keysParam),
+                UnitId = "",
                 FunctionParameter = keysParam
             };
 
-            var funcSymbol = new FunctionSymbol() {
+            var funcSymbol = new FunctionDeclarationSymbol() {
                 Name = nameof(func),
-                Function = func.Function,
+                UnitId = "",
+                FunctionDeclaration = func,
                 Parameters = [schemaParamSymbol, keysParamSymbol]
             };
 
@@ -178,7 +187,7 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
-            var scopeTracker = new ScopeTracker() {
+            var scopeTracker = new UnitScopeTracker() {
                 NodeToPersonalScope = {
                     [file] = fileScope,
                     [func.Function] = funcScope
@@ -190,20 +199,78 @@ namespace Zuh.Compiler.Tests.Semantics.Visitors {
                 }
             };
 
-            var symbolTracker = new SymbolTracker();
+            var symbolTracker = new UnitSymbolTracker();
 
             var visitor = new IdentifierResolverVisitor() {
-                ScopeTracker = scopeTracker,
-                SymbolTracker = symbolTracker
+                UnitScopeTracker = scopeTracker,
+                UnitSymbolTracker = symbolTracker,
+                Diagnostics = null!
             };
             
             visitor.Visit(file);
             
-            Assert.True(symbolTracker.Symbols.TryGetValue(schemaParamIdentifierReference, out var schemaParamSymbolFromTracker));
-            Assert.True(symbolTracker.Symbols.TryGetValue(keysParamIdentifierReference, out var keysParamSymbolFromTracker));
+            Assert.True(symbolTracker.IdentifierToSymbol.TryGetValue(schemaParamIdentifierReference, out var schemaParamSymbolFromTracker));
+            Assert.True(symbolTracker.IdentifierToSymbol.TryGetValue(keysParamIdentifierReference, out var keysParamSymbolFromTracker));
             
             Assert.Equal(schemaParamSymbol, schemaParamSymbolFromTracker);
             Assert.Equal(keysParamSymbol, keysParamSymbolFromTracker);
+        }
+
+        [Fact]
+        public void Visit_BadIdentifier_CreatesDiagnostic() {
+            var identifier = new Identifier() {
+                Value = "identifier",
+                SourceSpan = new SourceSpan() {
+                    Start = 235, // completely arbitrary numbers
+                    End = 2903
+                }
+            };
+
+            var declaration = new ExpressionDeclaration() {
+                Name = new Label() {
+                    Value = ""
+                },
+                Expression = new IdentifierExpression() {
+                    Identifier = identifier
+                }
+            };
+            
+            var file = new ZuhFile() {
+                RootStatements = [
+                    declaration
+                ]
+            };
+
+            var fileScope = new Scope();
+
+            var scopeTracker = new UnitScopeTracker() {
+                NodeToPersonalScope = {
+                    [file] = fileScope,
+                },
+                NodeToEnclosingScope = {
+                    [declaration] = fileScope,
+                    [identifier] = fileScope
+                }
+            };
+            
+            var symbolTracker = new UnitSymbolTracker();
+
+            var diagnostics = new DiagnosticCollector();
+
+            var visitor = new IdentifierResolverVisitor() {
+                UnitSymbolTracker = symbolTracker,
+                UnitScopeTracker = scopeTracker,
+                Diagnostics = diagnostics
+            };
+            
+            visitor.Visit(file);
+
+            var expectedDiagnostic = new SymbolResolutionError() {
+                SymbolName = nameof(identifier),
+                Location = identifier.SourceSpan
+            };
+            
+            Assert.Equivalent((List<Diagnostic>)[expectedDiagnostic], diagnostics);
         }
     }
 }

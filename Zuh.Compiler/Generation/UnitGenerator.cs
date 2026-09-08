@@ -23,7 +23,7 @@ namespace Zuh.Compiler.Generation {
         public MappingNode Generate() {
             var root = new MappingNode();
             
-            foreach(var statement in Analyzer.File.RootStatements) {
+            foreach(var statement in Analyzer.UnitAst.RootStatements) {
                 if(statement is not ExpressionDeclaration { IsExport: true } expressionDeclaration)
                     continue;
                 
