@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Schema;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Diagnostics;

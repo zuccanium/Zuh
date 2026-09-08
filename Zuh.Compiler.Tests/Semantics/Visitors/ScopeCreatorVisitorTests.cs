@@ -1,6 +1,4 @@
 ﻿using Zuh.Compiler.Ast;
-using Zuh.Compiler.Semantics;
-using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Visitors;
 

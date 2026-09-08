@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Tests.Infrastructure.Extensions;
 using static Zuh.Compiler.Tests.Infrastructure.SpanMarker;
 

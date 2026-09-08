@@ -1,11 +1,8 @@
 ﻿using Zuh.Compiler.Ast;
-using Zuh.Compiler.Diagnostics;
-using Zuh.Compiler.Parsing;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Trackers.Compilation;
 using Zuh.Compiler.Semantics.Visitors;
-using Zuh.Compiler.Utils;
 
 namespace Zuh.Compiler.Semantics.Analyzers {
     /// <summary>

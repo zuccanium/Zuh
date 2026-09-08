@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Trackers.Compilation;
 using Zuh.Compiler.Semantics.Trackers.Unit;

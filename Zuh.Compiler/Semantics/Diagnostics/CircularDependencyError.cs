@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Zuh.Compiler.Diagnostics;
+﻿using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Trackers.Compilation;
 
 namespace Zuh.Compiler.Semantics.Diagnostics {

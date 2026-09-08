@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace Zuh.Compiler.Diagnostics {
+﻿namespace Zuh.Compiler.Diagnostics {
     public class DiagnosticCollector : List<Diagnostic> {
         /// <summary>
         /// aggregates a bunch of <see cref="DiagnosticCollector"/>s into a single one.

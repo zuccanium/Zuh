@@ -1,6 +1,5 @@
 ﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
-using Zuh.Compiler.Parsing;
 
 namespace Zuh.Compiler.Semantics {
     /// <summary>

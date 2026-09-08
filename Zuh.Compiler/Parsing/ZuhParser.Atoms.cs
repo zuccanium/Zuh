@@ -1,6 +1,5 @@
 ﻿using Pidgin;
 using static Pidgin.Parser;
-using static Pidgin.Parser<char>;
 using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Parsing {

@@ -1,6 +1,4 @@
-﻿using Zuh.Compiler.Ast;
-
-namespace Zuh.Compiler.Semantics {
+﻿namespace Zuh.Compiler.Semantics {
     /// <summary>
     /// dependency injection based file system go.
     /// </summary>

@@ -1,5 +1,4 @@
-﻿using Zuh.Compiler.Ast;
-using Zuh.Compiler.Generation.Nodes;
+﻿using Zuh.Compiler.Generation.Nodes;
 using Zuh.Compiler.Semantics.Analyzers;
 
 namespace Zuh.Compiler.Generation {

@@ -1,11 +1,9 @@
-﻿using System.Net.Mail;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics;
 using Zuh.Compiler.Semantics.Analyzers;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
-using Zuh.Compiler.Semantics.Trackers.Unit;
 using Zuh.Compiler.Semantics.Types;
 
 namespace Zuh.Compiler.Tests.Semantics.Analyzers {

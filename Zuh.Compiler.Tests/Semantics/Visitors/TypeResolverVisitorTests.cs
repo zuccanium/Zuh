@@ -1,5 +1,4 @@
-﻿using System.Xml.Schema;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;

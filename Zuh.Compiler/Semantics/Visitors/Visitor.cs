@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Zuh.Compiler.Ast;
+﻿using Zuh.Compiler.Ast;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     // i know most professional projects use manual traversal with the double dispatch pattern

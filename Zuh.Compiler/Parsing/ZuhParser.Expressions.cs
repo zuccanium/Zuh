@@ -1,7 +1,5 @@
-﻿using System.Runtime.Versioning;
-using Pidgin;
+﻿using Pidgin;
 using static Pidgin.Parser;
-using static Pidgin.Parser<char>;
 using Pidgin.Expression;
 using Zuh.Compiler.Ast;
 

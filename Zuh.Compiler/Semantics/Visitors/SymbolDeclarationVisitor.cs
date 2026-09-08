@@ -1,11 +1,9 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Zuh.Compiler.Ast;
 using Zuh.Compiler.Diagnostics;
 using Zuh.Compiler.Semantics.Diagnostics;
 using Zuh.Compiler.Semantics.Symbols;
 using Zuh.Compiler.Semantics.Trackers.Unit;
-using Zuh.Compiler.Utils;
 
 namespace Zuh.Compiler.Semantics.Visitors {
     /// <summary>
